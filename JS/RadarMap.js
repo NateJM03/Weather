@@ -1,56 +1,75 @@
-// RadarMap.js
-// Initialize the Leaflet map
-const radarMap = L.map('radar-map').setView([39.0, -98.0], 5);
-
-// Add a dark base layer
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(radarMap);
-
-// Function to get a nowCOAST image overlay based on map bounds
-function getNowcoastOverlay(bounds) {
-  const bbox = bounds.toBBoxString(); // "west,south,east,north"
-  const exportUrl = `https://nowcoast.noaa.gov/arcgis/rest/services/nowcoast/radar_meteo_imagery_nexrad_time/MapServer/export?` +
-    `bbox=${bbox}` +
-    `&bboxSR=4326&imageSR=4326&size=800,600&format=png&transparent=true&f=image`;
-
-  return L.imageOverlay(exportUrl, bounds, {
-    opacity: 0.6,
-    interactive: false
-  });
-}
-
-// Add and update the radar overlay
-let currentOverlay = null;
-
-function updateRadarOverlay() {
-  if (currentOverlay) {
-    radarMap.removeLayer(currentOverlay);
-  }
-  currentOverlay = getNowcoastOverlay(radarMap.getBounds());
-  currentOverlay.addTo(radarMap);
-}
-
-// Update overlay on map move
-radarMap.on('moveend', updateRadarOverlay);
-
-// Initial radar image
-updateRadarOverlay();
-
-// Fullscreen toggle on click
-document.getElementById("radar-map").addEventListener("click", function () {
-  if (!document.fullscreenElement) {
-    this.requestFullscreen().catch(err => {
-      console.error("Fullscreen error:", err);
-    });
-  } else {
-    document.exitFullscreen();
-  }
-});
-
-// Optional: Hook to update map center from Location.js
-window.updateMapView = function () {
-  if (window.currentLocation?.latitude && window.currentLocation?.longitude) {
-    radarMap.setView([currentLocation.latitude, currentLocation.longitude], 7);
-  }
+let map;
+let currentRadarLayer;
+const radarTileBase = "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/ridge::";
+const radarLayers = {
+  "N0R": "Reflectivity",
+  "N0U": "Velocity",
+  "N0V": "Spectrum Width",
+  "N0S": "Storm-Relative Velocity"
 };
+
+// Initialize the Leaflet map
+function initRadarMap() {
+  map = L.map("radar-map").setView([39.8283, -98.5795], 5); // Default: center of USA
+
+  // Add base map layer
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  // Load default radar overlay
+  setRadarLayer("N0R");
+
+  // Setup listener for radar layer change
+  const radarSelect = document.getElementById("radar-layer-select");
+  radarSelect.addEventListener("change", (e) => {
+    setRadarLayer(e.target.value);
+  });
+
+  // Load alerts
+  loadNWSAlerts();
+}
+
+// Set a radar overlay tile
+function setRadarLayer(layerCode) {
+  if (currentRadarLayer) {
+    map.removeLayer(currentRadarLayer);
+  }
+
+  const tileUrl = `${radarTileBase}${layerCode}/{z}/{x}/{y}.png`;
+
+  currentRadarLayer = L.tileLayer(tileUrl, {
+    opacity: 0.6,
+    zIndex: 100,
+    attribution: "Radar imagery from ISU Mesonet"
+  });
+
+  currentRadarLayer.addTo(map);
+}
+
+// Load and overlay NWS alerts
+function loadNWSAlerts() {
+  fetch("https://api.weather.gov/alerts/active")
+    .then(res => res.json())
+    .then(data => {
+      const alertsLayer = L.geoJSON(data, {
+        style: feature => ({
+          color: "#ff6f61",
+          weight: 2,
+          fillOpacity: 0.25
+        }),
+        onEachFeature: (feature, layer) => {
+          const props = feature.properties;
+          const msg = `<strong>${props.event}</strong><br>${props.headline}<br><em>${props.description || "No description."}</em>`;
+          layer.bindPopup(msg);
+        }
+      });
+
+      alertsLayer.addTo(map);
+    })
+    .catch(err => console.error("Failed to load alerts:", err));
+}
+
+// Wait for DOM
+document.addEventListener("DOMContentLoaded", initRadarMap);

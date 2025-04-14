@@ -4,12 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TheClearWeather</title>
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Header remains similar to your current implementation -->
   <header>
     <form id="zip-form">
       <label for="zip-input">Enter Zip Code:</label>
@@ -19,56 +17,48 @@
     <div id="location-display"></div>
   </header>
 
-  <!-- Main container using CSS Grid -->
   <div class="container">
-    <!-- Section: Current Conditions -->
     <section id="current-conditions">
       <h2>Current Conditions</h2>
-      <div class="content">
-        <!-- Dynamic current conditions injected by JS -->
-      </div>
+      <div class="content"></div>
     </section>
-    
-    <!-- Section: Active Alerts -->
+
     <section id="alerts">
       <h2>Active Alerts</h2>
-      <div id="active-alerts" class="content">
-        <!-- Active alerts injected by JS -->
-      </div>
-    </section>    
-    
-    <!-- Section: Radar Map -->
+      <div id="active-alerts" class="content"></div>
+    </section>
+
     <section id="radar-map-section">
       <h2>Radar Imagery</h2>
-      <div id="radar-map">
-        <!-- Leaflet radar map will be rendered here -->
+      <div id="radar-map" style="height: 500px; border-radius: 8px;"></div>
+      <div style="margin-top: 10px;">
+        <label for="radar-layer-select">Radar Layer:</label>
+        <select id="radar-layer-select">
+          <option value="N0R">Reflectivity</option>
+          <option value="N0U">Velocity</option>
+          <option value="N0V">Spectrum Width</option>
+          <option value="N0S">Storm-Relative Velocity</option>
+        </select>
       </div>
     </section>
-    
-    <!-- Sections for Hourly and Daily Forecast remain unchanged -->
+
     <section id="hourly-forecast">
       <h2>Hourly Forecast</h2>
-      <div class="content forecast-wrapper">
-        <!-- Hourly forecast cards injected by JS -->
-      </div>
+      <div class="content forecast-wrapper"></div>
     </section>
-    
+
     <section id="daily-forecast">
       <h2>Daily Forecast</h2>
-      <div class="content forecast-wrapper">
-        <!-- Daily forecast cards injected by JS -->
-      </div>
+      <div class="content forecast-wrapper"></div>
     </section>
   </div>
-  
-  <!-- Include external libraries -->
+
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  
-  <!-- Include your JavaScript files -->
   <script src="/JS/Location.js"></script>
   <script src="/JS/FetchCurrentConditions.js"></script>
   <script src="/JS/FetchAlerts.js"></script>
   <script src="/JS/FetchHourlyForecast.js"></script>
   <script src="/JS/FetchDailyForecast.js"></script>
   <script src="/JS/RadarMap.js"></script>
-  
+</body>
+</html>
