@@ -19,7 +19,7 @@ function fetchHourlyForecast() {
   // Fetch the points data to get the forecastHourly URL.
   fetch(pointsUrl, {
     headers: {
-      'User-Agent': 'KitchenWeatherDisplay (your.email@example.com)',
+      'User-Agent': 'TheClearWeather (web@millernj.com)',
       'Accept': 'application/ld+json'
     }
   })

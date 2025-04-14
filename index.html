@@ -1,43 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TheClearWeather</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <link rel="stylesheet" href="styles.css">
+  <!-- Leaflet CSS: v1.9.4 (stable) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <form id="zip-form">
-      <label for="zip-input">Enter Zip Code:</label>
-      <input type="text" id="zip-input" name="zip" placeholder="Zip Code">
-      <button type="submit">Set Location</button>
-    </form>
-    <div id="location-display"></div>
-  </header>
+    <header>
+      <form id="zip-form">
+        <label for="zip-input">Enter Zip Code:</label>
+        <input type="text" id="zip-input" name="zip" placeholder="Zip Code">
+        <button type="submit">Set Location</button>
+      </form>
+      <div id="location-display"></div>
+    </header>
+  
+    <div class="container">
+      <section id="current-conditions">
+        <h2>Current Conditions</h2>
+        <div class="content"></div>
+      </section>
+  
+      <section id="alerts">
+        <h2>Active Alerts</h2>
+        <div id="active-alerts" class="content"></div>
+      </section>
 
   <div class="container">
-    <section id="current-conditions">
-      <h2>Current Conditions</h2>
-      <div class="content"></div>
-    </section>
-
-    <section id="alerts">
-      <h2>Active Alerts</h2>
-      <div id="active-alerts" class="content"></div>
-    </section>
-
+    <!-- your sections… -->
     <section id="radar-map-section">
       <h2>Radar Imagery</h2>
-      <div id="radar-map" style="height: 500px; border-radius: 8px;"></div>
-      <div style="margin-top: 10px;">
+      <div id="radar-map" style="height:500px; border-radius:8px;"></div>
+      <div style="margin-top:10px;">
         <label for="radar-layer-select">Radar Layer:</label>
         <select id="radar-layer-select">
           <option value="N0R">Reflectivity</option>
           <option value="N0U">Velocity</option>
-          <option value="N0V">Spectrum Width</option>
-          <option value="N0S">Storm-Relative Velocity</option>
         </select>
       </div>
     </section>
@@ -52,8 +57,11 @@
       <div class="content forecast-wrapper"></div>
     </section>
   </div>
+    <!-- …and the rest -->
+  </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <!-- Leaflet JS: v1.9.4 (stable) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/JS/Location.js"></script>
   <script src="/JS/FetchCurrentConditions.js"></script>
   <script src="/JS/FetchAlerts.js"></script>

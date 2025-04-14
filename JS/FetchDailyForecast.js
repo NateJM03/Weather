@@ -43,7 +43,7 @@ function fetchDailyForecast() {
     }
     return fetch(forecastUrl, {
       headers: {
-        'User-Agent': 'KitchenWeatherDisplay (your.email@example.com)',
+        'User-Agent': 'TheClearWeather (web@millernj.com)',
         'Accept': 'application/ld+json'
       }
     });
