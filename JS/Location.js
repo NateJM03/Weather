@@ -1,10 +1,4 @@
 /* Location.js */
-/*
- * Handles zip code input; converts a 5-digit US zip code to geographic coordinates
- * and the corresponding city and state using the Zippopotam.us API.
- * When the location is successfully set, it immediately triggers forecast updates.
- */
-
 var currentLocation = {
   zip: '',
   city: '',
@@ -36,11 +30,8 @@ function fetchLocationFromZip(zip) {
           `Forecast for: ${currentLocation.city}, ${currentLocation.state}`;
         console.log("Updated currentLocation:", currentLocation);
 
-        // Trigger immediate forecast updates after setting location
-        fetchCurrentConditions();
-        fetchAlerts();
-        fetchHourlyForecast();
-        fetchDailyForecast();
+        // Trigger radar map update
+        updateRadarMap(currentLocation.latitude, currentLocation.longitude);
       }
     })
     .catch(error => {
