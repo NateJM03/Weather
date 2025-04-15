@@ -16,20 +16,37 @@
 }
 
 body {
-  font-family: 'Arial', sans-serif;
-  background: var(--bg-color);
-  color: var(--text-color);
+  font-family: Arial, sans-serif;
+  background-color: #0c0c0d;
+  color: white;
   padding: 20px;
-  line-height: 1.5;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas:
+    "current alerts"
+    "radar radar"
+    "hourly hourly"
+    "daily daily";
+  gap: 20px;
+}
+
+#radar-map {
+  height: 500px; /* Set height for the radar map */
+  border: 1px solid #ccc;
 }
 
 header {
   text-align: center;
   margin-bottom: 20px;
 }
+
 header form {
   margin-bottom: 10px;
 }
+
 header input,
 header button {
   font-size: 1em;
@@ -37,37 +54,26 @@ header button {
   border: none;
   border-radius: 0px;
 }
+
 header input {
   width: 180px;
   margin-right: 8px;
-  background: var(--surface-color);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-header button {
-  background: var(--accent-color);
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-header button:hover {
-  background: #2288ee;
-}
-#location-display {
-  font-size: 1.1em;
-  color: var(--subtext-color);
 }
 
-.container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto auto auto;
-  grid-template-areas:
-    "current alerts"
-    "radar radar"
-    "hourly hourly"
-    "daily daily";
-  gap: 20px;
+header button {
+  background-color: #3399ff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+header button:hover {
+  background-color: #2288ee;
+}
+
+#location-display {
+  font-size: 1.1em;
+  color: #b0b0b0;
 }
 
 section {

@@ -1,165 +1,77 @@
-/* RadarMap.js */
-/*
- * Initializes a Leaflet map with base tiles and NOAA nowCOAST radar overlays.
- * Reflectivity uses the ArcGIS REST export endpoint (avoids CORS issues);
- * velocity uses animated GIFs.
- *
- * PARAMETERS you can adjust:
- *   updateWhenIdle       - boolean; wait until panning ends before loading tiles
- *   updateInterval       - number (ms); minimum time between tile reloads
- *   unloadInvisibleTiles - boolean; keep offscreen tiles in memory
- *   reuseTiles           - boolean; reuse <img> elements for tiles
- *   keepBuffer           - number; rows/columns of tiles to keep beyond viewport
- */
+// RadarMap.js
 
-let map;
-let reflectivityLayer;
-let velocityOverlay;
-let currentProduct = "N0R";
-let lastProduct = "N0R";
-let velocityStation = null;
-let velocityDebounceTimeout = null;
-
-// Convert tile X/Y/Z to Web Mercator bbox
-function tile2bbox(x, y, z) {
-  const tileSize = 256;
-  const initialResolution = 2 * Math.PI * 6378137 / tileSize;
-  const originShift = 2 * Math.PI * 6378137 / 2.0;
-  const resolution = initialResolution / Math.pow(2, z);
-  const minx = x * tileSize * resolution - originShift;
-  const maxx = (x + 1) * tileSize * resolution - originShift;
-  const miny = originShift - (y + 1) * tileSize * resolution;
-  const maxy = originShift - y * tileSize * resolution;
-  return [minx, miny, maxx, maxy];
-}
-
-// Define a TileLayer subclass that calls the ArcGIS REST export endpoint
-const ReflectivityExportLayer = L.TileLayer.extend({
-  getTileUrl: function(coords) {
-    const bbox = tile2bbox(coords.x, coords.y, coords.z);
-    // Use export to get a 256x256 PNG32 with transparency
-    return `https://nowcoast.noaa.gov/arcgis/rest/services/radar_meteo_imagery_nexrad_time/MapServer/export` +
-           `?bbox=${bbox.join(',')}` +
-           `&bboxSR=3857&imageSR=3857` +
-           `&layers=show:1` +
-           `&size=256,256` +
-           `&format=png32` +
-           `&transparent=true` +
-           `&f=image`;
-  }
-});
-
-function initRadarMap() {
-  // Create the Leaflet map centered on the continental U.S.
-  map = L.map("radar-map").setView([39.8283, -98.5795], 5);
-
-  // Add OpenStreetMap base tiles
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18,
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(map);
-
-  // Instantiate the reflectivity layer via export
-  reflectivityLayer = new ReflectivityExportLayer({
-    attribution: "NOAA nowCOAST",
-    tileSize: 256,
-    updateWhenIdle: true,
-    updateInterval: 500,
-    unloadInvisibleTiles: false,
-    reuseTiles: true,
-    keepBuffer: 2
+// Initialize the map
+let map = L.map('radar-map', {
+    center: [39.8283, -98.5795], // Default center (US-wide)
+    zoom: 5, // Default zoom level
+    attributionControl: false // Disable Leaflet's default attribution
   });
-
-  // Add reflectivity overlay by default
+  
+  // Set the base layer (OpenStreetMap for context)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+  
+  // Correct WMS URL for Iowa State Radar Service
+  const proxyUrl = "https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi";  // Use this base URL for WMS requests
+  
+  // Reflectivity Layer from Cloudflare Proxy (Updated to N0R layer)
+  const reflectivityLayer = L.tileLayer.wms(proxyUrl, {
+    layers: 'nexrad-n0r',  // Updated to use the N0R layer
+    format: 'image/png',
+    transparent: true,
+    attribution: "Iowa State NEXRAD Reflectivity"
+  });
+  
+  // Velocity Layer from Cloudflare Proxy (Updated to N0S layer)
+  const velocityLayer = L.tileLayer.wms(proxyUrl, {
+    layers: 'nexrad-n0s',  // Updated to use the N0S layer
+    format: 'image/png',
+    transparent: true,
+    attribution: "Iowa State NEXRAD Velocity"
+  });
+  
+  // Watches and Warnings Layer from Cloudflare Proxy
+  const watchesWarningsLayer = L.tileLayer.wms(proxyUrl, {
+    layers: '0', // Layer for active watches and warnings
+    format: 'image/png',
+    transparent: true,
+    attribution: "NOAA Watches and Warnings"
+  });
+  
+  // Add reflectivity layer by default
   reflectivityLayer.addTo(map);
-
-  // Handle switching between reflectivity and velocity
-  document.getElementById("radar-layer-select").addEventListener("change", () => {
-    const selected = document.getElementById("radar-layer-select").value;
-    if (selected !== currentProduct) {
-      lastProduct = currentProduct;
-      currentProduct = selected;
-      updateRadarOverlay();
-    }
-  });
-}
-
-function updateRadarMap(lat, lon) {
-  // Recenter map on new location and update overlay
-  map.setView([lat, lon], 7);
-  updateRadarOverlay(lat, lon);
-}
-
-function updateRadarOverlay(lat = currentLocation.latitude, lon = currentLocation.longitude) {
-  // Remove existing layers
-  clearRadarLayers();
-
-  if (currentProduct === "N0R") {
-    // Reflectivity via export tiles
-    reflectivityLayer.addTo(map);
-  } else if (currentProduct === "N0U") {
-    // Velocity overlay (animated GIF)
-    addVelocityOverlay(lat, lon);
-  } else {
-    console.warn(`${currentProduct} not supported; reverting to reflectivity.`);
-    reflectivityLayer.addTo(map);
-    document.getElementById("radar-layer-select").value = "N0R";
-    currentProduct = "N0R";
-  }
-}
-
-function clearRadarLayers() {
-  if (map.hasLayer(reflectivityLayer)) map.removeLayer(reflectivityLayer);
-  if (velocityOverlay) {
-    map.removeLayer(velocityOverlay);
-    map.off("moveend", debounceVelocityOverlay);
-    velocityOverlay = null;
-  }
-}
-
-function addVelocityOverlay(lat, lon) {
-  if (!lat || !lon) {
-    console.warn("Velocity overlay requires a valid location.");
-    return;
-  }
-
-  // Fetch the nearest radar station for velocity product
-  fetch(`https://api.weather.gov/points/${lat},${lon}`)
-    .then(response => response.json())
-    .then(data => {
-      const station = data.properties.radarStation;
-      if (!station) throw new Error("No radar station found.");
-      velocityStation = station;
-      loadVelocityOverlay();
-    })
-    .catch(err => {
-      console.error("Velocity fetch failed:", err);
+  
+  // Function to toggle between reflectivity and velocity layers
+  function toggleRadarLayer(layerType) {
+    if (layerType === "reflectivity") {
+      map.removeLayer(velocityLayer);
       reflectivityLayer.addTo(map);
-      document.getElementById("radar-layer-select").value = "N0R";
-      currentProduct = "N0R";
-    });
-}
-
-function loadVelocityOverlay() {
-  if (!velocityStation) return;
-  // Animated GIF URL for velocity product
-  const gifUrl = `https://radar.weather.gov/ridge/RadarImg/N0U/${velocityStation}_0.gif`;
-
-  velocityOverlay = L.imageOverlay(gifUrl, map.getBounds(), {
-    opacity: 0.8
-  }).addTo(map);
-
-  // Debounce updating GIF bounds on map move
-  map.on("moveend", debounceVelocityOverlay);
-}
-
-function debounceVelocityOverlay() {
-  if (velocityDebounceTimeout) clearTimeout(velocityDebounceTimeout);
-  velocityDebounceTimeout = setTimeout(() => {
-    if (velocityOverlay) {
-      velocityOverlay.setBounds(map.getBounds());
+    } else if (layerType === "velocity") {
+      map.removeLayer(reflectivityLayer);
+      velocityLayer.addTo(map);
     }
-  }, 150);
-}
-
-document.addEventListener("DOMContentLoaded", initRadarMap);
+  }
+  
+  // Function to toggle watches/warnings layer
+  function toggleWatchesWarningsLayer() {
+    if (map.hasLayer(watchesWarningsLayer)) {
+      map.removeLayer(watchesWarningsLayer);
+    } else {
+      watchesWarningsLayer.addTo(map);
+    }
+  }
+  
+  // Add buttons to toggle between layers
+  const control = L.control({ position: 'topright' });
+  control.onAdd = function () {
+    const div = L.DomUtil.create('div', 'leaflet-control-layers');
+    div.innerHTML = `
+      <button onclick="toggleRadarLayer('reflectivity')">Reflectivity</button>
+      <button onclick="toggleRadarLayer('velocity')">Velocity</button>
+      <button onclick="toggleWatchesWarningsLayer()">Toggle Watches/Warnings</button>
+    `;
+    return div;
+  };
+  control.addTo(map);
+  

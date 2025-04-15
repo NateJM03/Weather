@@ -1,65 +1,43 @@
-/* Location.js */
-/*
- * Converts a 5‑digit US zip code to lat/lon via Zippopotam.us,
- * updates the displayed location, recenters the map,
- * fetches all NWS data, and reloads the radar overlay.
- */
+// Location.js
 
-var currentLocation = {
-  zip: '',
-  city: '',
-  state: '',
-  latitude: null,
-  longitude: null
-};
+let currentLocation = { latitude: null, longitude: null, city: null };
 
-function fetchLocationFromZip(zip) {
-  console.log("Fetching location for zip code:", zip);
-  fetch(`https://api.zippopotam.us/us/${zip}`)
-    .then(response => {
-      if (!response.ok) throw new Error("Zip code not found");
-      return response.json();
-    })
+// Fetch coordinates and city name from a given zip code
+function getLocationFromZip(zip) {
+  // Use Zippopotam.us API to convert zip code to latitude, longitude, and city name
+  const geocodeUrl = `https://api.zippopotam.us/us/${zip}`;
+
+  fetch(geocodeUrl)
+    .then(response => response.json())
     .then(data => {
-      const place = data.places[0];
-      currentLocation.zip       = zip;
-      currentLocation.city      = place["place name"];
-      currentLocation.state     = place["state abbreviation"];
-      currentLocation.latitude  = parseFloat(place["latitude"]);
-      currentLocation.longitude = parseFloat(place["longitude"]);
-
-      // Update displayed location
-      document.getElementById("location-display").innerText =
-        `Forecast for: ${currentLocation.city}, ${currentLocation.state}`;
-
-      console.log("Updated currentLocation:", currentLocation);
-
-      // Fetch all NWS data for the new location
-      fetchCurrentConditions();
-      fetchAlerts();
-      fetchHourlyForecast();
-      fetchDailyForecast();
-
-      // Recenter map and reload radar overlay
-      updateRadarMap(currentLocation.latitude, currentLocation.longitude);
+      if (data.places && data.places.length > 0) {
+        // Extract latitude, longitude, and city name
+        currentLocation.latitude = parseFloat(data.places[0].latitude);
+        currentLocation.longitude = parseFloat(data.places[0].longitude);
+        currentLocation.city = data.places[0]["place name"];  // City name
+        console.log('Location found:', currentLocation.latitude, currentLocation.longitude, currentLocation.city);
+        
+        // Update the location display with the city name
+        document.getElementById('location-display').textContent = `Location: ${currentLocation.city}`;
+        
+        // Notify the other scripts that the location is ready
+        document.dispatchEvent(new Event('location-ready'));  // Custom event signaling location is ready
+      } else {
+        console.error('Unable to find location for zip code');
+      }
     })
     .catch(error => {
-      console.error("Error fetching location data:", error);
-      document.getElementById("location-display").innerText =
-        "Invalid Zip Code. Please try again.";
+      console.error('Error fetching location from zip code:', error);
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const zipForm = document.getElementById("zip-form");
-  zipForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const zipInput = document.getElementById("zip-input").value.trim();
-    if (/^\d{5}$/.test(zipInput)) {
-      fetchLocationFromZip(zipInput);
-    } else {
-      document.getElementById("location-display").innerText =
-        "Please enter a valid 5-digit US zip code.";
-    }
-  });
+// Handle form submission for zip code
+document.getElementById('zip-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+  const zip = document.getElementById('zip-input').value;
+  if (zip) {
+    getLocationFromZip(zip);
+  } else {
+    alert('Please enter a valid zip code');
+  }
 });
