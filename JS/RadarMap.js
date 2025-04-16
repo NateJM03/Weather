@@ -1,12 +1,226 @@
-// RadarMap.js
 
+const staticStations = [
+  { id: "KABR", name: "	ABERDEEN	", state: "	ABERDEEN, SD	" },
+  { id: "KBIS", name: "	BISMARCK	", state: "	BISMARCK, ND	" },
+  { id: "KFTG", name: "	FRONT RANGE AP	", state: "	DENVER/BOULDER, CO	" },
+  { id: "KDMX", name: "	JOHNSTON	", state: "	DES MOINES, IA	" },
+  { id: "KDTX", name: "	WHITE LAKE	", state: "	DETROIT, MI	" },
+  { id: "KDDC", name: "	DODGE CITY	", state: "	DODGE CITY, KS	" },
+  { id: "KDLH", name: "	DULUTH	", state: "	DULUTH, MN	" },
+  { id: "KCYS", name: "	CHEYENNE	", state: "	CHEYENNE, WY	" },
+  { id: "KLOT", name: "	ROMEOVILLE	", state: "	CHICAGO, IL	" },
+  { id: "KGLD", name: "	GOODLAND	", state: "	GOODLAND, KS	" },
+  { id: "KUEX", name: "	BLUE HILL	", state: "	HASTINGS, NE	" },
+  { id: "KGJX", name: "	GRAND JUNCTION	", state: "	GRAND JUNCTION, CO	" },
+  { id: "KGRR", name: "	GRAND RAPIDS	", state: "	GRAND RAPIDS, MI	" },
+  { id: "KMVX", name: "	GRAND FORKS	", state: "	FARGO/GRAND FORKS, ND	" },
+  { id: "KGRB", name: "	GREEN BAY	", state: "	GREEN BAY, WI	" },
+  { id: "KIND", name: "	INDIANAPOLIS	", state: "	INDIANAPOLIS, IN	" },
+  { id: "KJKL", name: "	JACKSON	", state: "	JACKSON, KY	" },
+  { id: "KARX", name: "	LA CROSSE	", state: "	LA CROSSE, WI	" },
+  { id: "KILX", name: "	LINCOLN	", state: "	LINCOLN/CENTRAL ILLINOIS, IL	" },
+  { id: "KLVX", name: "	FORT KNOX	", state: "	LOUISVILLE, KY	" },
+  { id: "KMQT", name: "	NEGAUNEE	", state: "	MARQUETTE	" },
+  { id: "KMKX", name: "	DOUSMAN	", state: "	MILWAUKEE, WI	" },
+  { id: "KMPX", name: "	CHANHASSEN	", state: "	MINNEAPOLIS, MN	" },
+  { id: "KAPX", name: "	GAYLORD	", state: "	GAYLORD/ALPENA, MI	" },
+  { id: "KLNX", name: "	NORTH PLATTE	", state: "	NORTH PLATTE, NE	" },
+  { id: "KIWX", name: "	NORTH WEBSTER	", state: "	N. WEBSTER/NORTHERN, IN	" },
+  { id: "KOAX", name: "	VALLEY	", state: "	OMAHA, NE	" },
+  { id: "KPAH", name: "	PADUCAH	", state: "	PADUCAH, KY	" },
+  { id: "KEAX", name: "	PLEASANT HILL	", state: "	PLEASANT HILL, MO	" },
+  { id: "KPUX", name: "	PUEBLO	", state: "	PUEBLO, CO	" },
+  { id: "KDVN", name: "	DAVENPORT	", state: "	QUAD CITIES, IA	" },
+  { id: "KUDX", name: "	NEW UNDERWOOD	", state: "	RAPID CITY, SD	" },
+  { id: "KRIW", name: "	RIVERTON	", state: "	RIVERTON, WY	" },
+  { id: "KSGF", name: "	SPRINGFIELD	", state: "	SPRINGFIELD, MO	" },
+  { id: "KLSX", name: "	WELDON SPRING	", state: "	ST. LOUIS, MO	" },
+  { id: "KFSD", name: "	SIOUX FALLS	", state: "	SIOUX FALLS, IA	" },
+  { id: "KTWX", name: "	TOPEKA	", state: "	TOPEKA, KS	" },
+  { id: "KICT", name: "	WICHITA	", state: "	WICHITA, KS	" },
+  { id: "KVWX", name: "	OWENSVILLE	", state: "	PADUCAH, KY	" },
+  { id: "KLTX", name: "	SHALLOTTE	", state: "	WILMINGTON, NC	" },
+  { id: "KCCX", name: "	STATE COLLEGE	", state: "	STATE COLLEGE/CENTRAL, PA	" },
+  { id: "KLWX", name: "	STERLING	", state: "	STERLING, VA	" },
+  { id: "KFCX", name: "	ROANOKE	", state: "	BLACKSBURG/ROANOKE, VA	" },
+  { id: "KRAX", name: "	CLAYTON	", state: "	RALEIGH/DURHAM, NC	" },
+  { id: "KGYX", name: "	GRAY	", state: "	PORTLAND, ME	" },
+  { id: "KDIX", name: "	FORT DIX	", state: "	MT HOLLY/PHILADELPHIA, PA	" },
+  { id: "KPBZ", name: "	CORAOPOLIS	", state: "	PITTSBURGH, PA	" },
+  { id: "KAKQ", name: "	WAKEFIELD	", state: "	WAKEFIELD, VA	" },
+  { id: "KMHX", name: "	NEWPORT	", state: "	MOREHEAD CITY, NC	" },
+  { id: "KGSP", name: "	GREER	", state: "	GREER/GREENVILLE/SPRTBG, SC	" },
+  { id: "KILN", name: "	WILMINGTON	", state: "	WILMINGTON/CINCINNATI, OH	" },
+  { id: "KCLE", name: "	CLEVELAND	", state: "	CLEVELAND, OH	" },
+  { id: "KCAE", name: "	WEST COLUMBIA	", state: "	COLUMBIA, SC	" },
+  { id: "KBGM", name: "	BINGHAMTON	", state: "	BINGHAMTON, NY	" },
+  { id: "KENX", name: "	EAST BERNE	", state: "	ALBANY, NY	" },
+  { id: "KBUF", name: "	BUFFALO	", state: "	BUFFALO, NY	" },
+  { id: "KCXX", name: "	COLCHESTER	", state: "	BURLINGTON, VT	" },
+  { id: "KCBW", name: "	HOULTON	", state: "	CARIBOU, ME	" },
+  { id: "KBOX", name: "	TAUNTON	", state: "	BOSTON /TAUNTON, MA	" },
+  { id: "KOKX", name: "	UPTON	", state: "	NEW YORK CITY, NY	" },
+  { id: "KCLX", name: "	GRAYS	", state: "	CHARLESTON, SC	" },
+  { id: "KRLX", name: "	CHARLESTON	", state: "	CHARLESTON, WV	" },
+  { id: "KBRO", name: "	BROWNSVILLE	", state: "	BROWNSVILLE, TX	" },
+  { id: "KABX", name: "	ALBUQUERQUE	", state: "	ALBUQUERQUE, NM	" },
+  { id: "KAMA", name: "	AMARILLO	", state: "	AMARILLO, TX	" },
+  { id: "KFFC", name: "	PEACHTREE CITY	", state: "	PEACHTREE CITY/ATLANTA, GA	" },
+  { id: "KEWX", name: "	NEW BRAUNFELS	", state: "	SAN ANTONIO, TX	" },
+  { id: "KBMX", name: "	ALABASTER	", state: "	BIRMINGHAM, AL	" },
+  { id: "KCRP", name: "	CORPUS CHRISTI	", state: "	CORPUS CHRISTI, TX	" },
+  { id: "KFWS", name: "	FORT WORTH	", state: "	DALLAS / FT. WORTH, TX	" },
+  { id: "KEPZ", name: "	SANTA TERESA	", state: "	EL PASO, TX	" },
+  { id: "KHGX", name: "	DICKINSON	", state: "	HOUSTON/ GALVESTON, TX	" },
+  { id: "KJAX", name: "	JACKSONVILLE	", state: "	JACKSONVILLE, FL	" },
+  { id: "KBYX", name: "	BOCA CHICA KEY	", state: "	KEY WEST, FL	" },
+  { id: "KMRX", name: "	MORRISTOWN	", state: "	MORRISTOWN/KNOXVILLE, TN	" },
+  { id: "KLBB", name: "	LUBBOCK	", state: "	LUBBOCK, TX	" },
+  { id: "KLZK", name: "	NORTH LITTLE ROCK	", state: "	LITTLE ROCK, AR	" },
+  { id: "KLCH", name: "	LAKE CHARLES	", state: "	LAKE CHARLES, LA	" },
+  { id: "KOHX", name: "	OLD HICKORY	", state: "	NASHVILLE, TN	" },
+  { id: "KMLB", name: "	MELBOURNE	", state: "	MELBOURNE, FL	" },
+  { id: "KNQA", name: "	MILLINGTON	", state: "	MEMPHIS, TN	" },
+  { id: "KAMX", name: "	MIAMI	", state: "	MIAMI, FL	" },
+  { id: "KMAF", name: "	MIDLAND	", state: "	MIDLAND/ODESSA, TX	" },
+  { id: "KTLX", name: "	OKLAHOMA CITY	", state: "	NORMAN, OK	" },
+  { id: "KHTX", name: "	HYTOP	", state: "	HUNTSVILLE, AL	" },
+  { id: "KMOB", name: "	MOBILE	", state: "	MOBILE, AL	" },
+  { id: "KTLH", name: "	TALLAHASSEE	", state: "	TALLAHASSEE, FL	" },
+  { id: "KTBW", name: "	RUSKIN	", state: "	TAMPA BAY AREA, FL	" },
+  { id: "KSJT", name: "	SAN ANGELO	", state: "	SAN ANGELO, TX	" },
+  { id: "KINX", name: "	INOLA	", state: "	TULSA, OK	" },
+  { id: "KSRX", name: "	CHAFFEE RIDGE	", state: "	TULSA, OK	" },
+  { id: "KDGX", name: "	BRANDON	", state: "	JACKSON, MS	" },
+  { id: "KSHV", name: "	SHREVEPORT	", state: "	SHREVEPORT, LA	" },
+  { id: "KHDC", name: "	HAMMOND	", state: "	NEW ORLEANS/SLIDELL, LA	" },
+  { id: "KLGX", name: "	LANGLEY HILL	", state: "	SEATTLE / TACOMA, WA	" },
+  { id: "KYUX", name: "	YUMA	", state: "	PHOENIX, AZ	" },
+  { id: "KEMX", name: "	TUCSON	", state: "	TUCSON, AZ	" },
+  { id: "KOTX", name: "	SPOKANE	", state: "	SPOKANE, WA	" },
+  { id: "KNKX", name: "	SAN DIEGO	", state: "	SAN DIEGO, CA	" },
+  { id: "KMUX", name: "	LOS GATOS	", state: "	MONTEREY/SAN FRANCISCO, CA	" },
+  { id: "KHNX", name: "	HANFORD	", state: "	SAN JOAQUIN/HANFORD, CA	" },
+  { id: "KSOX", name: "	SANTA ANA MOUNTAINS	", state: "	SAN DIEGO, CA	" },
+  { id: "KATX", name: "	EVERETT	", state: "	SEATTLE / TACOMA, WA	" },
+  { id: "KIWA", name: "	PHOENIX	", state: "	PHOENIX, AZ	" },
+  { id: "KRTX", name: "	PORTLAND	", state: "	PORTLAND, OR	" },
+  { id: "KSFX", name: "	SPRINGFIELD	", state: "	POCATELLO, ID	" },
+  { id: "KRGX", name: "	NIXON	", state: "	RENO, NV	" },
+  { id: "KDAX", name: "	DAVIS	", state: "	SACRAMENTO, CA	" },
+  { id: "KMTX", name: "	SALT LAKE CITY	", state: "	SALT LAKE CITY, UT	" },
+  { id: "KPDT", name: "	PENDLETON	", state: "	PENDLETON, OR	" },
+  { id: "KMSX", name: "	MISSOULA	", state: "	MISSOULA, MT	" },
+  { id: "KESX", name: "	LAS VEGAS	", state: "	LAS VEGAS, NV	" },
+  { id: "KVTX", name: "	LOS ANGELES	", state: "	LOS ANGELES, CA	" },
+  { id: "KMAX", name: "	MEDFORD	", state: "	MEDFORD, OR	" },
+  { id: "KFSX", name: "	FLAGSTAFF	", state: "	FLAGSTAFF, AZ	" },
+  { id: "KGGW", name: "	GLASGOW	", state: "	GLASGOW, MT	" },
+  { id: "KLRX", name: "	ELKO	", state: "	ELKO, NV	" },
+  { id: "KBHX", name: "	EUREKA	", state: "	EUREKA, CA	" },
+  { id: "KTFX", name: "	GREAT FALLS	", state: "	GREAT FALLS, MT	" },
+  { id: "KCBX", name: "	BOISE	", state: "	BOISE, ID	" },
+  { id: "KBLX", name: "	BILLINGS	", state: "	BILLINGS, MT	" },
+  { id: "KICX", name: "	CEDAR CITY	", state: "	SALT LAKE CITY, UT	" },
+  { id: "PABC", name: "	ANCHORAGE	", state: "	ANCHORAGE, AK	" },
+  { id: "PAPD", name: "	FAIRBANKS	", state: "	FAIRBANKS, AK	" },
+  { id: "PHKM", name: "	HONOLULU	", state: "	HONOLULU, HI	" },
+  { id: "PAHG", name: "	ANCHORAGE	", state: "	ANCHORAGE, AK	" },
+  { id: "PAKC", name: "	ANCHORAGE	", state: "	ANCHORAGE, AK	" },
+  { id: "PAIH", name: "	ANCHORAGE	", state: "	ANCHORAGE, AK	" },
+  { id: "PHMO", name: "	HONOLULU	", state: "	HONOLULU, HI	" },
+  { id: "PAEC", name: "	FAIRBANKS	", state: "	FAIRBANKS, AK	" },
+  { id: "TJUA", name: "	SAN JUAN	", state: "	SAN JUAN, PR	" },
+  { id: "PACG", name: "	JUNEAU	", state: "	JUNEAU, AK	" },
+  { id: "PHKI", name: "	HONOLULU	", state: "	HONOLULU, HI	" },
+  { id: "PHWA", name: "	HONOLULU	", state: "	HONOLULU, HI	" },
+  { id: "KFDR", name: "	NORMAN	", state: "	NORMAN, OK	" },
+  { id: "PGUA", name: "	AGANA	", state: "	GUAM	" },
+  { id: "KBBX", name: "	SACRAMENTO	", state: "	SACRAMENTO, CA	" },
+  { id: "KFDX", name: "	ALBUQUERQUE	", state: "	ALBUQUERQUE, NM	" },
+  { id: "KGWX", name: "	JACKSON	", state: "	JACKSON, MS	" },
+  { id: "KDOX", name: "	WAKEFIELD	", state: "	WAKEFIELD, VA	" },
+  { id: "KDYX", name: "	SAN ANGELO	", state: "	SAN ANGELO, TX	" },
+  { id: "KEYX", name: "	LAS VEGAS	", state: "	LAS VEGAS, NV	" },
+  { id: "KEVX", name: "	MOBILE	", state: "	MOBILE, AL	" },
+  { id: "KHPX", name: "	PADUCAH	", state: "	PADUCAH, KY	" },
+  { id: "KGRK", name: "	FORT WORTH	", state: "	DALLAS / FT. WORTH, TX	" },
+  { id: "KTYX", name: "	SOUTH BURLINGTON	", state: "	BURLINGTON, VT	" },
+  { id: "KPOE", name: "	LAKE CHARLES	", state: "	LAKE CHARLES, LA	" },
+  { id: "KEOX", name: "	TALLAHASSEE	", state: "	TALLAHASSEE, FL	" },
+  { id: "KHDX", name: "	SANTA TERESA	", state: "	EL PASO, TX	" },
+  { id: "KDFX", name: "	NEW BRAUNFELS	", state: "	SAN ANTONIO, TX	" },
+  { id: "KMXX", name: "	ALABASTER	", state: "	BIRMINGHAM, AL	" },
+  { id: "KMBX", name: "	BISMARCK	", state: "	BISMARCK, ND	" },
+  { id: "KVAX", name: "	JACKSONVILLE	", state: "	JACKSONVILLE, FL	" },
+  { id: "KJGX", name: "	PEACHTREE CITY	", state: "	PEACHTREE CITY/ATLANTA, GA	" },
+  { id: "KVNX", name: "	NORMAN	", state: "	NORMAN, OK	" },
+  { id: "KABX", name: "	ALBUQUERQUE	", state: "	ALBUQUERQUE, NM	" },
+  { id: "KFDX", name: "	CANNON AFB	", state: "	ALBUQUERQUE, NM	" },
+  { id: "PAHG", name: "	KENAI FAA	", state: "	ANCHORAGE, AK	" },
+  { id: "PABC", name: "	BETHEL FAA	", state: "	ANCHORAGE, AK	" },
+  { id: "PAKC", name: "	KING SALMON FAA	", state: "	ANCHORAGE, AK	" },
+  { id: "PAIH", name: "	MIDDLETON ISLAND	", state: "	ANCHORAGE, AK	" },
+  { id: "PAPD", name: "	FAIRBANKS FAA	", state: "	FAIRBANKS, AK	" },
+  { id: "PAEC", name: "	NOME FAA	", state: "	FAIRBANKS, AK	" },
+  { id: "KAKQ", name: "	NORFOLK	", state: "	WAKEFIELD, VA	" },
+  { id: "KDOX", name: "	DOVER AFB	", state: "	WAKEFIELD, VA	" },
+  { id: "KBIS", name: "	BISMARCK	", state: "	BISMARCK, ND	" },
+  { id: "KMBX", name: "	MINOT AFB	", state: "	BISMARCK, ND	" },
+  { id: "KBMX", name: "	BIRMINGHAM	", state: "	ALABASTER, AL	" },
+  { id: "KMXX", name: "	MAXWELL AFB	", state: "	ALABASTER, AL	" },
+  { id: "KCXX", name: "	BURLINGTON	", state: "	COLCHESTER, VT	" },
+  { id: "KTYX", name: "	FT DRUM	", state: "	SOUTH BURLINGTON, VT	" },
+  { id: "KEPZ", name: "	EL PASO	", state: "	SANTA TERESA, NM	" },
+  { id: "KHDX", name: "	EL PASO	", state: "	SANTA TERESA, NM	" },
+  { id: "KEWX", name: "	AUSTIN/SAN ANTONIO	", state: "	NEW BRAUNFELS, TX	" },
+  { id: "KDFX", name: "	LAUGHLIN AFB	", state: "	NEW BRAUNFELS, TX	" },
+  { id: "KFFC", name: "	ATLANTA	", state: "	PEACHTREE CITY, GA	" },
+  { id: "KJGX", name: "	ROBINS AFB	", state: "	PEACHTREE CITY, GA	" },
+  { id: "KFWS", name: "	DALLAS/FT WORTH	", state: "	FORT WORTH, TX	" },
+  { id: "KGRK", name: "	FT CAVAZOS	", state: "	FORT WORTH, TX	" },
+  { id: "PHKI", name: "	SOUTH KAUAI	", state: "	HONOLULU, HI	" },
+  { id: "PHWA", name: "	SOUTH SHORE FAA	", state: "	HONOLULU, HI	" },
+  { id: "PHMO", name: "	MOLOKAI FAA	", state: "	HONOLULU, HI	" },
+  { id: "PHKM", name: "	KAMUELA/KOHALA APT	", state: "	HONOLULU, HI	" },
+  { id: "KGWX", name: "	COLUMBUS AFB	", state: "	JACKSON, MS	" },
+  { id: "KDGX", name: "	JACKSON/BRANDON, MS	", state: "	BRANDON, MS	" },
+  { id: "KJAX", name: "	JACKSONVILLE	", state: "	JACKSONVILLE, FL	" },
+  { id: "KVAX", name: "	MOODY AFB	", state: "	JACKSONVILLE, FL	" },
+  { id: "KLCH", name: "	LAKE CHARLES	", state: "	LAKE CHARLES, LA	" },
+  { id: "KPOE", name: "	FT JOHNSON	", state: "	LAKE CHARLES, LA	" },
+  { id: "KMOB", name: "	MOBILE	", state: "	MOBILE, AL	" },
+  { id: "KEVX", name: "	EGLIN AFB	", state: "	MOBILE, AL	" },
+  { id: "KTLX", name: "	NORMAN	", state: "	OKLAHOMA CITY, OK	" },
+  { id: "KFDR", name: "	ALTUS AFB	", state: "	NORMAN, OK	" },
+  { id: "KVNX", name: "	VANCE AFB	", state: "	NORMAN, OK	" },
+  { id: "KPAH", name: "	PADUCAH	", state: "	PADUCAH, KY	" },
+  { id: "KHPX", name: "	FT CAMPBELL	", state: "	PADUCAH, KY	" },
+  { id: "KVWX", name: "	EVANSVILLE, IN	", state: "	OWENSVILLE, IN	" },
+  { id: "KIWA", name: "	PHOENIX	", state: "	PHOENIX, AZ	" },
+  { id: "KYUX", name: "	YUMA	", state: "	YUMA, AZ	" },
+  { id: "KATX", name: "	SEATTLE	", state: "	EVERETT, WA	" },
+  { id: "KLGX", name: "	LANGLEY HILL (NW WASHINGTON)	", state: "	LANGLEY HILL, WA	" },
+  { id: "KNKX", name: "	SAN DIEGO	", state: "	SAN DIEGO, CA	" },
+  { id: "KSOX", name: "	SANTA ANA MTS	", state: "	SANTA ANA MOUNTAINS, CA	" },
+  { id: "KSJT", name: "	SAN ANGELO	", state: "	SAN ANGELO, TX	" },
+  { id: "KDYX", name: "	DYESS AFB	", state: "	SAN ANGELO, TX	" },
+  { id: "KICX", name: "	CEDAR CITY	", state: "	CEDAR CITY, UT	" },
+  { id: "KMTX", name: "	SALT LAKE CITY	", state: "	SALT LAKE CITY, UT	" },
+  { id: "KDAX", name: "	SACRAMENTO	", state: "	DAVIS, CA	" },
+  { id: "KBBX", name: "	BEALE AFB	", state: "	SACRAMENTO, CA	" },
+  { id: "KTLH", name: "	TALLAHASSEE	", state: "	TALLAHASSEE, FL	" },
+  { id: "KEOX", name: "	FT NOVOSEL	", state: "	TALLAHASSEE, FL	" },
+  { id: "KINX", name: "	TULSA	", state: "	INOLA, OK	" },
+  { id: "KSRX", name: "	WESTERN ARKANSAS	", state: "	CHAFFEE RIDGE, AR	" },
+  { id: "KESX", name: "	LAS VEGAS	", state: "	LAS VEGAS, NV	" },
+  { id: "KEYX", name: "	EDWARDS AFB	", state: "	LAS VEGAS, NV	" },
+]
 // ---------------------------------------------
-// 1. Initialize Leaflet Map & Base Tile Layer
+// 1. Initialize Leaflet map & base layer
 // ---------------------------------------------
-const proxyUrl = 'https://jolly-math-3a60.accounts-millernj.workers.dev/proxy';
-
 const map = L.map('radar-map', {
-  center: [39.8283, -98.5795], // Center of CONUS
+  center: [39.8283, -98.5795], // continental US center
   zoom: 5,
   attributionControl: false
 });
@@ -14,337 +228,179 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// -------------------------------------------------
-// 2. National Reflectivity & Watches Overlays
-// -------------------------------------------------
+
+// ---------------------------------------------
+// 2. National Reflectivity (WMS via proxy)
+// ---------------------------------------------
+const proxyUrl = 'https://jolly-math-3a60.accounts-millernj.workers.dev/proxy';
 const nationalReflectivity = L.tileLayer.wms(proxyUrl, {
   layers: 'nexrad-n0r',
   format: 'image/png',
   transparent: true,
-  crossOrigin: true,
   attribution: 'National Reflectivity'
-}).addTo(map);
-
-const watchesWarnings = L.tileLayer.wms(proxyUrl, {
-  layers: '0',
-  format: 'image/png',
-  transparent: true,
-  crossOrigin: true,
-  attribution: 'Watches & Warnings'
 });
 
-// -------------------------------------------------
-// 3. LayerGroups for Local Station Overlays
-// -------------------------------------------------
-const localReflectivityOverlay = L.layerGroup();
-const localVelocityOverlay    = L.layerGroup();
 
-// -------------------------------------------------
-// 4. Layer Control (Base + Overlays)
-// -------------------------------------------------
-const baseMaps = {
-  'National Reflectivity': nationalReflectivity
-};
-const overlayMaps = {
-  'Local Reflectivity': localReflectivityOverlay,
-  'Local Velocity':    localVelocityOverlay,
-  'Watches & Warnings': watchesWarnings
-};
-L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+// ---------------------------------------------
+// 3. NWS Alerts → GeoJSON (Warnings & Watches)
+// ---------------------------------------------
+const warningsLayer = L.geoJSON(null, {
+  style: () => ({ color:'#c00', fillColor:'#c00', fillOpacity:0.2, weight:2 }),
+  onEachFeature: (feat, layer) => {
+    const p = feat.properties;
+    layer.bindPopup(
+      `<strong>${p.event}</strong><br>` +
+      `Area: ${p.areaDesc}<br>` +
+      `Effective: ${new Date(p.effective).toLocaleString()}<br>` +
+      `${p.description}`
+    );
+  }
+});
+const watchesLayer = L.geoJSON(null, {
+  style: () => ({ color:'#f80', fillColor:'#f80', fillOpacity:0.2, weight:2 }),
+  onEachFeature: (feat, layer) => {
+    const p = feat.properties;
+    layer.bindPopup(
+      `<strong>${p.event}</strong><br>` +
+      `Area: ${p.areaDesc}<br>` +
+      `Effective: ${new Date(p.effective).toLocaleString()}<br>` +
+      `${p.description}`
+    );
+  }
+});
+function fetchWatchWarnData(){
+  console.log('Fetching NWS alerts…');
+  fetch('https://api.weather.gov/alerts/active')
+    .then(r=>r.json())
+    .then(data=>{
+      warningsLayer.clearLayers();
+      watchesLayer.clearLayers();
+      data.features.forEach(f=>{
+        const ev=f.properties.event||'';
+        if(/Warning/i.test(ev)) warningsLayer.addData(f);
+        else if(/Watch|Advisory/i.test(ev)) watchesLayer.addData(f);
+      });
+    })
+    .catch(e=>console.error('Alerts error:',e));
+}
+fetchWatchWarnData();
+setInterval(fetchWatchWarnData,10*60*1000); // every 10 min
 
-// -------------------------------------------------
-// 5. Static Radar Station List
-//    The following array was generated by parsing your provided GML.
-//    Each station is an object containing:
-//      • id:   the radar station identifier (nws:rda_id)
-//      • name: the station name (nws:name)
-//      • state: the two‑letter state abbreviation (manually added based on coordinates)
-//      • lat:  latitude (nws:lat)
-//      • lon:  longitude (nws:lon)
-// -------------------------------------------------
-const staticStations = [
-  // (Below are the first 10 entries; the complete list of 215 entries follows.)
-  // fid=radar_sites.1
-  { id: "KABR", name: "Aberdeen, SD", state: "SD", lat: 45.45583, lon: -98.41306 },
-  { id: "KABX", name: "Albuquerque, NM", state: "NM", lat: 35.14972, lon: -106.82389 },
-  { id: "KAKQ", name: "Norfolk (Wakefield), VA", state: "VA", lat: 36.98389, lon: -77.00750 },
-  { id: "KAMA", name: "Amarillo, TX", state: "TX", lat: 35.23333, lon: -101.70928 },
-  { id: "KAMX", name: "Miami, FL", state: "FL", lat: 25.61056, lon: -80.41306 },
-  { id: "KAPX", name: "Traverse City, MI", state: "MI", lat: 44.90635, lon: -84.71953 },
-  { id: "KARX", name: "La Crosse, WI", state: "WI", lat: 43.82278, lon: -91.19111 },
-  { id: "KATX", name: "Seattle, WA", state: "WA", lat: 48.19461, lon: -122.49569 },
-  { id: "KBBX", name: "Sacramento, CA", state: "CA", lat: 39.49611, lon: -121.63167 },
-  { id: "KBGM", name: "Binghamton, NY", state: "NY", lat: 42.19969, lon: -75.98472 },
-  { id: "KBHX", name: "Eureka (Bunker Hill), CA", state: "CA", lat: 40.49833, lon: -124.29217 },
-  { id: "KBIS", name: "Bismarck, ND", state: "ND", lat: 46.77083, lon: -100.76028 },
-  { id: "KBLX", name: "Billings, MT", state: "MT", lat: 45.85378, lon: -108.60681 },
-  { id: "KBMX", name: "Birmingham, AL", state: "AL", lat: 33.17194, lon: -86.76972 },
-  { id: "KBOX", name: "Boston, MA", state: "MA", lat: 41.95578, lon: -71.13686 },
-  { id: "KBRO", name: "Brownsville, TX", state: "TX", lat: 25.91556, lon: -97.41861 },
-  { id: "KBUF", name: "Buffalo, NY", state: "NY", lat: 42.94861, lon: -78.73694 },
-  { id: "KBYX", name: "Key West, FL", state: "FL", lat: 24.59694, lon: -81.70333 },
-  { id: "KCAE", name: "Columbia, SC", state: "SC", lat: 33.94861, lon: -81.11861 },
-  { id: "KCBW", name: "Houlton, ME", state: "ME", lat: 46.03917, lon: -67.80642 },
-  { id: "KCBX", name: "Boise, ID", state: "ID", lat: 43.49022, lon: -116.23603 },
-  { id: "KCCX", name: "Pittsburgh, PA", state: "PA", lat: 40.92306, lon: -78.00389 },
-  { id: "KCLE", name: "Cleveland, OH", state: "OH", lat: 41.41306, lon: -81.86000 },
-  { id: "KCLX", name: "Columbus, OH", state: "OH", lat: 39.96118, lon: -82.99879 },
-  { id: "KCRP", name: "Corpus Christi, TX", state: "TX", lat: 27.78389, lon: -97.51083 },
-  { id: "KCXX", name: "Burlington, VT", state: "VT", lat: 44.51111, lon: -73.16639 },
-  { id: "KCYS", name: "Cheyenne, WY", state: "WY", lat: 41.15194, lon: -104.80611 },
-  { id: "KDAX", name: "Dixon, IL", state: "IL", lat: 41.83600, lon: -90.00000 },
-  { id: "KDDC", name: "Dodge City, KS", state: "KS", lat: 37.76083, lon: -99.96889 },
-  { id: "KDFX", name: "San Antonio, TX", state: "TX", lat: 29.27250, lon: -100.28028 },
-  { id: "KDGX", name: "Dodge City, KS", state: "KS", lat: 37.76083, lon: -99.96889 },
-  { id: "KDIX", name: "Dixie, LA", state: "LA", lat: 29.80000, lon: -90.00000 },
-  { id: "KDLH", name: "Duluth, MN", state: "MN", lat: 46.83694, lon: -92.20972 },
-  { id: "KDMX", name: "Des Moines, IA", state: "IA", lat: 41.73111, lon: -93.72286 },
-  { id: "KDOX", name: "Dodge City, KS", state: "KS", lat: 37.76083, lon: -99.96889 },
-  { id: "KDTX", name: "Detroit, MI", state: "MI", lat: 42.33100, lon: -83.04500 },
-  { id: "KDVN", name: "Davenport, IA", state: "IA", lat: 41.61167, lon: -90.58083 },
-  { id: "KDYX", name: "Dyersburg, TN", state: "TN", lat: 36.00000, lon: -88.50000 },
-  { id: "KEAX", name: "Kansas City, MO", state: "MO", lat: 38.81025, lon: -94.26447 },
-  { id: "KEMX", name: "Phoenix, AZ", state: "AZ", lat: 31.89361, lon: -110.63028 },
-  { id: "KENX", name: "Wichita, KS", state: "KS", lat: 37.68890, lon: -97.33610 },
-  { id: "KEOX", name: "Omaha, NE", state: "NE", lat: 41.25600, lon: -95.93400 },
-  { id: "KEPZ", name: "Tulsa, OK", state: "OK", lat: 36.15400, lon: -95.99200 },
-  { id: "KESX", name: "San Francisco, CA", state: "CA", lat: 37.77493, lon: -122.41942 },
-  { id: "KEVX", name: "Seattle, WA", state: "WA", lat: 47.60621, lon: -122.33207 },
-  { id: "KEWX", name: "Wilmington, NC", state: "NC", lat: 34.22570, lon: -77.94470 },
-  { id: "KEYX", name: "New Orleans, LA", state: "LA", lat: 29.95110, lon: -90.07150 },
-  { id: "KFCX", name: "Memphis, TN", state: "TN", lat: 35.14970, lon: -90.04900 },
-  { id: "KFDR", name: "Frederick, MD", state: "MD", lat: 39.41000, lon: -77.41000 },
-  { id: "KFDX", name: "San Antonio, TX", state: "TX", lat: 29.27250, lon: -100.28028 },
-  { id: "KFFC", name: "Atlanta, GA", state: "GA", lat: 33.36333, lon: -84.56583 },
-  { id: "KFSD", name: "Sioux Falls, SD", state: "SD", lat: 43.58778, lon: -96.72889 },
-  { id: "KFSX", name: "Phoenix, AZ", state: "AZ", lat: 34.57433, lon: -111.19844 },
-  { id: "KFTG", name: "Denver, CO", state: "CO", lat: 39.78664, lon: -104.54581 },
-  { id: "KFWS", name: "Fort Worth, TX", state: "TX", lat: 32.57278, lon: -97.30314 },
-  { id: "KGGW", name: "Glasgow, MT", state: "MT", lat: 48.20636, lon: -106.62469 },
-  { id: "KGJX", name: "Grand Junction, CO", state: "CO", lat: 39.06222, lon: -108.21376 },
-  { id: "KGLD", name: "Goodland, KS", state: "KS", lat: 39.36694, lon: -101.70028 },
-  { id: "KGRB", name: "Green Bay, WI", state: "WI", lat: 44.49863, lon: -88.11111 },
-  { id: "KGRK", name: "Temple, TX", state: "TX", lat: 30.72167, lon: -97.38278 },
-  { id: "KGRR", name: "Grand Rapids, MI", state: "MI", lat: 42.89389, lon: -85.54489 },
-  { id: "KGSP", name: "Greenville, SC", state: "SC", lat: 34.88331, lon: -82.21983 },
-  { id: "KGWX", name: "Gainesville, FL", state: "FL", lat: 29.65160, lon: -82.32480 },
-  { id: "KGYX", name: "Youngstown, OH", state: "OH", lat: 41.09900, lon: -80.64600 },
-  { id: "KHDC", name: "Henderson, NV", state: "NV", lat: 36.03900, lon: -114.98100 },
-  { id: "KHDX", name: "Dickinson, ND", state: "ND", lat: 46.87700, lon: -102.79000 },
-  { id: "KHGX", name: "Hagerstown, MD", state: "MD", lat: 39.64100, lon: -77.71900 },
-  { id: "KHNX", name: "Hanford, CA", state: "CA", lat: 35.36600, lon: -119.64600 },
-  { id: "KHPX", name: "Houston, TX", state: "TX", lat: 29.76000, lon: -95.36980 },
-  { id: "KHTX", name: "Huntsville, AL", state: "AL", lat: 34.73040, lon: -86.58610 },
-  { id: "KICT", name: "Wichita, KS", state: "KS", lat: 37.69000, lon: -97.34000 },
-  { id: "KICX", name: "Des Moines, IA", state: "IA", lat: 41.60000, lon: -93.62000 },
-  { id: "KILN", name: "Lincoln, NE", state: "NE", lat: 40.81000, lon: -96.68000 },
-  { id: "KILX", name: "Lima, OH", state: "OH", lat: 40.74000, lon: -84.10500 },
-  { id: "KIND", name: "Indianapolis, IN", state: "IN", lat: 39.76840, lon: -86.15810 },
-  { id: "KINX", name: "Knoxville, TN", state: "TN", lat: 35.96060, lon: -83.92070 },
-  { id: "KIWA", name: "Williston, ND", state: "ND", lat: 48.15500, lon: -103.62000 },
-  { id: "KIWX", name: "Wilmington, NC", state: "NC", lat: 34.22570, lon: -77.94470 },
-  { id: "KJAX", name: "Jacksonville, FL", state: "FL", lat: 30.39600, lon: -81.68600 },
-  { id: "KJGX", name: "Juneau, AK", state: "AK", lat: 58.30100, lon: -134.41900 },
-  { id: "KJKL", name: "Jackson, MS", state: "MS", lat: 32.29800, lon: -90.18400 },
-  { id: "KLBB", name: "Little Rock, AR", state: "AR", lat: 34.74600, lon: -92.28900 },
-  { id: "KLCH", name: "Louisville, KY", state: "KY", lat: 38.25270, lon: -85.75850 },
-  { id: "KLGX", name: "Lexington, KY", state: "KY", lat: 38.04000, lon: -84.50000 },
-  { id: "KLNX", name: "Lansing, MI", state: "MI", lat: 42.73250, lon: -84.55550 },
-  { id: "KLOT", name: "Chicago, IL", state: "IL", lat: 41.87810, lon: -87.62980 },
-  { id: "KLRX", name: "Laramie, WY", state: "WY", lat: 41.31200, lon: -105.67500 },
-  { id: "KLSX", name: "Worcester, MA", state: "MA", lat: 42.26260, lon: -71.80230 },
-  { id: "KLTX", name: "Tampa, FL", state: "FL", lat: 27.95060, lon: -82.45720 },
-  { id: "KLVX", name: "Las Vegas, NV", state: "NV", lat: 36.16990, lon: -115.13980 },
-  { id: "KLWX", name: "Washington, DC", state: "DC", lat: 38.90720, lon: -77.03690 },
-  { id: "KLZK", name: "Klamath Falls, OR", state: "OR", lat: 42.22490, lon: -121.78170 },
-  { id: "KMAF", name: "Midland, TX", state: "TX", lat: 31.94346, lon: -102.18930 },
-  { id: "KMAX", name: "Medford, OR", state: "OR", lat: 42.08111, lon: -122.71736 },
-  { id: "KMBX", name: "McCook, NE", state: "NE", lat: 40.00000, lon: -100.00000 },
-  { id: "KMHX", name: "Macon, GA", state: "GA", lat: 32.84000, lon: -83.63200 },
-  { id: "KMKX", name: "Kingston, NY", state: "NY", lat: 41.92700, lon: -73.99700 },
-  { id: "KMLB", name: "Melbourne, FL", state: "FL", lat: 28.10000, lon: -80.60000 },
-  { id: "KMOB", name: "Mobile, AL", state: "AL", lat: 30.67944, lon: -88.23972 },
-  { id: "KMPX", name: "Minneapolis, MN", state: "MN", lat: 44.84889, lon: -93.56553 },
-  { id: "KMQT", name: "Marquette, MI", state: "MI", lat: 46.53111, lon: -87.54833 },
-  { id: "KMRX", name: "Marion, OH", state: "OH", lat: 40.80000, lon: -82.50000 },
-  { id: "KMSX", name: "Bozeman, MT", state: "MT", lat: 47.04111, lon: -113.98611 },
-  { id: "KMTX", name: "Salt Lake City, UT", state: "UT", lat: 41.26278, lon: -112.44778 },
-  { id: "KMUX", name: "San Jose, CA", state: "CA", lat: 37.15522, lon: -121.89844 },
-  { id: "KMVX", name: "Fargo, ND", state: "ND", lat: 47.52806, lon: -97.32500 },
-  { id: "KMXX", name: "Birmingham, AL", state: "AL", lat: 32.53665, lon: -85.78975 },
-  { id: "KNKX", name: "Newton, KS", state: "KS", lat: 38.00000, lon: -94.00000 },
-  { id: "KNQA", name: "Naperville, IL", state: "IL", lat: 41.75000, lon: -88.15000 },
-  { id: "KOAX", name: "Kearney, NE", state: "NE", lat: 41.32000, lon: -96.37000 },
-  { id: "KOHX", name: "Odessa, TX", state: "TX", lat: 31.00000, lon: -102.00000 },
-  { id: "KOKX", name: "New York, NY", state: "NY", lat: 40.87000, lon: -72.86392 },
-  { id: "KOTX", name: "Spokane, WA", state: "WA", lat: 47.68056, lon: -117.62583 },
-  { id: "KPAH", name: "Paducah, KY", state: "KY", lat: 37.06833, lon: -88.77194 },
-  { id: "KPBZ", name: "Pittsburgh, PA", state: "PA", lat: 40.53167, lon: -80.21794 },
-  { id: "KPDT", name: "Pendleton, OR", state: "OR", lat: 45.69056, lon: -118.85292 },
-  { id: "KPOE", name: "Lake Charles, LA", state: "LA", lat: 31.15528, lon: -92.97583 },
-  { id: "KPUX", name: "La Junta, CO", state: "CO", lat: 38.45944, lon: -104.18139 },
-  { id: "KRAX", name: "El Paso, TX", state: "TX", lat: 31.87306, lon: -106.69800 },
-  { id: "KRGX", name: "Bakersfield, CA", state: "CA", lat: 35.09778, lon: -117.56075 },
-  { id: "KRIW", name: "Riverton, WY", state: "WY", lat: 41.00000, lon: -106.00000 },
-  { id: "KRLX", name: "Grand Rapids, MI", state: "MI", lat: 42.89389, lon: -85.54489 },
-  { id: "KRTX", name: "Sioux City, IA", state: "IA", lat: 41.00000, lon: -93.00000 },
-  { id: "KSFX", name: "Flagstaff, AZ", state: "AZ", lat: 35.20000, lon: -111.60000 },
-  { id: "KSGF", name: "Springfield, MO", state: "MO", lat: 37.23528, lon: -93.40028 },
-  { id: "KSHV", name: "Shreveport, LA", state: "LA", lat: 32.45083, lon: -93.84125 },
-  { id: "KSJT", name: "San Angelo, TX", state: "TX", lat: 31.37111, lon: -100.49222 },
-  { id: "KSOX", name: "Jackson, MS", state: "MS", lat: 33.00000, lon: -90.00000 },
-  { id: "KSRX", name: "Oklahoma City, OK", state: "OK", lat: 35.00000, lon: -97.00000 },
-  { id: "KTBW", name: "Texarkana, TX", state: "TX", lat: 32.00000, lon: -94.00000 },
-  { id: "KTFX", name: "Great Falls, MT", state: "MT", lat: 47.45972, lon: -111.38528 },
-  { id: "KTLH", name: "Tallahassee, FL", state: "FL", lat: 30.39750, lon: -84.32889 },
-  { id: "KTLX", name: "Tulsa, OK", state: "OK", lat: 35.33306, lon: -97.27776 },
-  { id: "KTWX", name: "Tucson, AZ", state: "AZ", lat: 32.22174, lon: -110.92647 },
-  { id: "KTYX", name: "Tyler, TX", state: "TX", lat: 32.35126, lon: -95.30106 },
-  { id: "KUDX", name: "Wichita Falls, TX", state: "TX", lat: 33.91371, lon: -98.49342 },
-  { id: "KUEX", name: "Eureka, CA", state: "CA", lat: 40.00000, lon: -124.00000 },
-  { id: "KVAX", name: "Tulsa, OK", state: "OK", lat: 36.00000, lon: -95.00000 },
-  { id: "KVBX", name: "Mobile, AL", state: "AL", lat: 32.00000, lon: -85.00000 },
-  { id: "KVNX", name: "Norfolk, NE", state: "NE", lat: 40.00000, lon: -96.00000 },
-  { id: "KVTX", name: "Texas City, TX", state: "TX", lat: 29.00000, lon: -101.00000 },
-  { id: "KVWX", name: "Wichita, KS", state: "KS", lat: 35.00000, lon: -97.00000 },
-  { id: "KYUX", name: "Youngstown, OH", state: "OH", lat: 41.00000, lon: -80.00000 },
-  { id: "PABC", name: "San Juan, PR", state: "PR", lat: 18.46550, lon: -66.10570 },
-  { id: "PACG", name: "Agana, GU", state: "GU", lat: 13.44430, lon: 144.79370 },
-  { id: "PAEC", name: "TBA", state: "", lat: 0.0, lon: 0.0 },
-  { id: "PAHG", name: "TBA", state: "", lat: 0.0, lon: 0.0 },
-  { id: "PAIH", name: "TBA", state: "", lat: 0.0, lon: 0.0 },
-  { id: "PAKC", name: "TBA", state: "", lat: 0.0, lon: 0.0 },
-  { id: "PAPD", name: "TBA", state: "", lat: 0.0, lon: 0.0 },
-  { id: "PGUA", name: "Hagåtña, GU", state: "GU", lat: 13.45583, lon: 144.81111 },
-  { id: "PHKI", name: "Honolulu, HI", state: "HI", lat: 21.30690, lon: -157.85830 },
-  { id: "PHKM", name: "Kahului, HI", state: "HI", lat: 20.89670, lon: -156.47830 },
-  { id: "PHMO", name: "Hilo, HI", state: "HI", lat: 19.72970, lon: -155.09000 },
-  { id: "PHWA", name: "Waianae, HI", state: "HI", lat: 21.50000, lon: -158.20000 },
-  { id: "TJUA", name: "Tinian, MP", state: "MP", lat: 14.99900, lon: 145.65000 },
-  
-]
-// (For clarity, I have included the complete array below. You can copy–paste this entire block.)
-/*
-const staticStations = [
-  { id: "KABR", name: "Aberdeen",         state: "SD", lat: 45.45583,  lon: -98.41306 },
-  { id: "KABX", name: "La Mesita Negra",  state: "NM", lat: 35.14972,  lon: -106.82389 },
-  { id: "KAKQ", name: "Wakefield",         state: "VA", lat: 36.98389,  lon: -77.00750 },
-  { id: "KAMA", name: "Amarillo",          state: "TX", lat: 35.23333,  lon: -101.70928 },
-  { id: "KAMX", name: "Miami",             state: "FL", lat: 25.61056,  lon: -80.41306 },
-  { id: "KAPX", name: "Gaylord",           state: "MI", lat: 44.90635,  lon: -84.71953 },
-  { id: "KARX", name: "La Crosse",         state: "WI", lat: 43.82278,  lon: -91.19111 },
-  { id: "KATX", name: "Camano Island",      state: "WA", lat: 48.19461,  lon: -122.49569 },
-  { id: "KBBX", name: "Oroville",          state: "CA", lat: 39.49611,  lon: -121.63167 },
-  { id: "KBGM", name: "Binghamton",        state: "NY", lat: 42.19969,  lon: -75.98472 },
-  { id: "KBHX", name: "Bunker Hill",       state: "MA", lat: 42.12345,  lon: -71.23456 },
-  { id: "KBIS", name: "Bismarck",          state: "ND", lat: 46.77083,  lon: -100.76028 },
-  { id: "KBLX", name: "Alkali Creek Rd",   state: "CO", lat: 45.85378,  lon: -108.60681 },
-  { id: "KBMX", name: "Alabaster",         state: "AL", lat: 33.17194,  lon: -86.76972 },
-  { id: "KBOX", name: "Taunton",           state: "MA", lat: 41.95578,  lon: -71.13686 },
-  { id: "KCRP", name: "Corpus Christi",    state: "TX", lat: 27.78389,  lon: -97.51083 },
-  { id: "KBLX", name: "Example Station",   state: "XX", lat: 00.00000,  lon: -00.00000 },
-  // ... (complete through all 215 stations)
+
+// ---------------------------------------------
+// 4. Radar Products per Station (WMS)
+// ---------------------------------------------
+// List IDs must match <Name> suffixes in GetCapabilities
+const radarProducts = [
+  { id:'sr_bref', name:'Super‑Res Reflectivity' },
+  { id:'sr_bvel', name:'Super‑Res Velocity' },
+  { id:'bdhc',   name:'Hydrometeor Classification' },
+  { id:'boha',   name:'1‑hr Precip Accumulation' },
+  { id:'bdsa',   name:'Storm Total Precipitation' },
+  // …add more as available…
 ];
-*/
-// (For the purpose of this example answer, the full list is shown in the attached file content.)
+let productLayers = {};
 
-// -------------------------------------------------
-// 6. Populate the Radar Station Select Dropdown
-// -------------------------------------------------
-function populateStationSelect() {
-  const sel = document.getElementById('radar-select');
-  if (!sel) return;
-  staticStations.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id; // e.g., "KSGF"
-    opt.text = `${s.name} (${s.id}) - ${s.state}  [${s.lat}, ${s.lon}]`;
-    sel.appendChild(opt);
-  });
+
+// ---------------------------------------------
+// 5. Build Layers Control
+// ---------------------------------------------
+const controlLayers = L.control.layers(
+  {}, 
+  {
+    'National Reflectivity': nationalReflectivity,
+    'Warnings':              warningsLayer,
+    'Watches & Advisories':  watchesLayer
+  },
+  { collapsed:false }
+).addTo(map);
+
+
+// ---------------------------------------------
+// 6. Populate Station Dropdown
+// ---------------------------------------------
+function populateStationSelect(){
+  const sel=document.getElementById('radar-select');
+  if(!sel) return;
+  staticStations
+    .slice().sort((a,b)=>a.name.localeCompare(b.name))
+    .forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.id;
+      opt.text=`${s.name} (${s.id}) – ${s.state}`;
+      sel.appendChild(opt);
+    });
 }
 populateStationSelect();
 
-// -------------------------------------------------
-// 7. Update Local Station Layers via Proxy
-//    (The logic is preserved from your earlier version.)
-// -------------------------------------------------
-function updateLocalLayers(stationId) {
-  if (!stationId) {
-    localReflectivityOverlay.clearLayers();
-    localVelocityOverlay.clearLayers();
-    return;
-  }
 
-  let ws;
-  if (stationId.length === 3) {
-    ws = 'k' + stationId.toLowerCase(); // e.g. "SGF" → "ksgf"
-  } else if (stationId.length === 4) {
-    ws = stationId.toLowerCase();       // e.g. "KBOS" → "kbos"
-  } else {
-    ws = stationId.toLowerCase();
-  }
-
-  localReflectivityOverlay.clearLayers();
-  localVelocityOverlay.clearLayers();
-
-  const wmsBase = `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows`;
-  const reflectivityName = `${ws}_sr_bref`;
-  const velocityName = `${ws}_sr_bvel`;
-
-  console.log('Requesting layers:', reflectivityName, velocityName);
-
-  const refl = L.tileLayer.wms(wmsBase, {
-    layers: reflectivityName,
-    format: 'image/png',
-    transparent: true,
-    crossOrigin: true,
-    attribution: `Reflectivity © ${stationId}`
+// ---------------------------------------------
+// 7. On Station Change → Fetch GetCapabilities
+// ---------------------------------------------
+function updateStationProducts(stationId){
+  // clear existing product layers
+  Object.values(productLayers).forEach(layer=>{
+    controlLayers.removeLayer(layer);
+    map.removeLayer(layer);
   });
+  productLayers={};
+  if(!stationId) return;
 
-  const vel = L.tileLayer.wms(wmsBase, {
-    layers: velocityName,
-    format: 'image/png',
-    transparent: true,
-    crossOrigin: true,
-    attribution: `Velocity © ${stationId}`
-  });
+  const ws=stationId.toLowerCase();
+  const capUrl=`https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows?service=WMS&request=GetCapabilities&version=1.3.0`;
 
-  localReflectivityOverlay.addLayer(refl);
-  localVelocityOverlay.addLayer(vel);
+  fetch(capUrl)
+    .then(r=>r.text())
+    .then(xmlStr=>{
+      const xml=new DOMParser().parseFromString(xmlStr,'application/xml');
+      const names=Array.from(xml.getElementsByTagName('Name')).map(n=>n.textContent);
 
-  refl.setZIndex(500);
-  vel.setZIndex(501);
-}
-
-// -------------------------------------------------
-// 8. Auto‑select station from /points on location-ready
-// -------------------------------------------------
-document.addEventListener('location-ready', () => {
-  const { latitude, longitude } = currentLocation;
-  fetch(`https://api.weather.gov/points/${latitude},${longitude}`, {
-    headers: {
-      'User-Agent': 'KitchenWeatherDisplay (your.email@example.com)',
-      'Accept': 'application/ld+json'
-    }
-  })
-    .then(r => r.json())
-    .then(data => {
-      const station = data.properties.radarStation;
-      console.log('Auto‑selecting radar station:', station);
-      updateLocalLayers(station);
-      const sel = document.getElementById('radar-select');
-      if (sel) sel.value = station;
+      radarProducts.forEach(prod=>{
+        const lname=`${ws}_${prod.id}`;
+        if(names.includes(lname)){
+          const layer=L.tileLayer.wms(
+            `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows`, {
+              layers: lname,
+              format:'image/png',
+              transparent:true,
+              attribution:`${prod.name} @ ${stationId}`
+            }
+          );
+          productLayers[prod.id]=layer;
+          controlLayers.addOverlay(layer, prod.name);
+        } else {
+          alert(`${prod.name} not available for ${stationId}`);
+        }
+      });
     })
-    .catch(err => console.error('Error fetching radarStation from points:', err));
+    .catch(err=>console.error('Capabilities error:',err));
+}
+document.getElementById('radar-select')
+  .addEventListener('change', e=>updateStationProducts(e.target.value));
+
+
+// ---------------------------------------------
+// 8. Auto‑select on location-ready (optional)
+// ---------------------------------------------
+document.addEventListener('location-ready', ()=>{
+  const sel=document.getElementById('radar-select');
+  if(currentLocation.radarStation && sel){
+    sel.value=currentLocation.radarStation;
+    updateStationProducts(sel.value);
+  }
 });
 
-// -------------------------------------------------
-// 9. Manual Override via <select>
-// -------------------------------------------------
-const sel = document.getElementById('radar-select');
-if (sel) {
-  sel.addEventListener('change', e => {
-    const id = e.target.value;
-    console.log('Manual station select:', id);
-    updateLocalLayers(id);
+
+// ---------------------------------------------
+// 9. FAQ Modal Logic
+// ---------------------------------------------
+const helpIcon=document.getElementById('radar-help'),
+      faqModal=document.getElementById('faq-modal'),
+      faqClose=document.getElementById('faq-close');
+if(helpIcon && faqModal && faqClose){
+  helpIcon.addEventListener('click',   ()=>faqModal.style.display='block');
+  faqClose.addEventListener('click',   ()=>faqModal.style.display='none');
+  window.addEventListener('click', evt=>{
+    if(evt.target===faqModal) faqModal.style.display='none';
   });
 }

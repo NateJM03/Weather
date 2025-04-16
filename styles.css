@@ -22,6 +22,43 @@ body {
   padding: 20px;
 }
 
+/* Help icon next to the dropdown */
+.help-icon {
+  margin-left: 8px;         /* space between select and icon */
+  cursor: pointer;          /* indicate clickable */
+  font-size: 1.2em;         /* slightly larger question mark */
+  color: var(--accent-color);
+}
+
+/* Modal backdrop */
+.modal {
+  display: none;            /* hidden by default */
+  position: fixed;          /* cover whole screen */
+  z-index: 1000;            /* above everything */
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5); /* semi‑transparent backdrop */
+}
+
+/* Modal content box */
+.modal-content {
+  background: var(--surface-color);
+  margin: 10% auto;         /* center vertically & horizontally */
+  padding: 20px;
+  border-radius: 4px;
+  width: 80%;
+  max-width: 500px;
+  color: var(--text-color);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+/* Close button (×) */
+.modal-close {
+  float: right;
+  font-size: 1.4em;
+  cursor: pointer;
+}
+
 .container {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -135,3 +172,4 @@ body::after {
   display: block;
   height: 40px;
 }
+
