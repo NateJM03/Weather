@@ -71,7 +71,7 @@ body {
 }
 
 #radar-map {
-  height: 500px; /* Set height for the radar map */
+  height: 70vh; /* Set height for the radar map */
   border: 1px solid #ccc;
 }
 

@@ -20,36 +20,7 @@
     </form>
 
     <!-- Manual radar station selector + FAQ icon -->
-    <label for="radar-select">Select Radar Station:</label>
-    <select id="radar-select">
-      <option value="">None</option>
-      <!-- the rest get appended by JS (alphabetically sorted) -->
-    </select>
-    <!-- Help icon triggers FAQ pop‑up -->
-    <span id="radar-help" class="help-icon" title="Radar Station FAQ">?</span>
-
-    <!-- FAQ Modal (hidden by default) -->
-    <div id="faq-modal" class="modal">
-      <div class="modal-content">
-        <span id="faq-close" class="modal-close">&times;</span>
-        <h3>Radar Station FAQ</h3>
-        <!-- Add your actual FAQ questions & answers here: -->
-        <p><strong>Q:</strong> How do I pick a station?<br/>
-           <strong>A:</strong> Open the dropdown, and pick the station nearest to you. some cities may have more than one station, offering different products. Not all stations offer all products.</p>
-        <p><strong>Q:</strong> What does “Super-Res Reflectivity" Mean?<br/>
-           <strong>A:</strong> This is your local NWS office's percipitation radar, in high resoloution.</p>
-           <p><strong>Q:</strong> What does “Super-Res Velocity" Mean?<br/>
-            <strong>A:</strong> This is your local NWS office's velocity radar, in high resoloution. It shows the velocity with which a storm is moving, with green moving towards the station, and red moving away. The lighter the color, the faster the storm is moving.</p>
-            <p><strong>Q:</strong> What does “Hydrometer Classification” show?<br/>
-              <strong>A:</strong> [ANSWER NEEDED]</p>
-              <p><strong>Q:</strong> What does “1‑hr Precip Accumulation” show?<br/>
-                <strong>A:</strong> [ANSWER NEEDED]</p>
-                <p><strong>Q:</strong> What does “Storm Total Precipitation” show?<br/>
-                  <strong>A:</strong> [ANSWER NEEDED]</p>
-                  <p><strong>Q:</strong> How often does the map update?<br/>
-                    <strong>A:</strong> [ANSWER NEEDED]</p>
-      </div>
-    </div>
+   
   </header>
 
   <div class="container">
@@ -65,6 +36,36 @@
 
     <section id="radar-map-section">
       <h2>Radar Map</h2>
+      <label for="radar-select">Select Radar Station:</label>
+      <select id="radar-select">
+        <option value="">None</option>
+        <!-- the rest get appended by JS (alphabetically sorted) -->
+      </select>
+      <!-- Help icon triggers FAQ pop‑up -->
+      <span id="radar-help" class="help-icon" title="Radar Station FAQ">?</span>
+  
+      <!-- FAQ Modal (hidden by default) -->
+      <div id="faq-modal" class="modal">
+        <div class="modal-content">
+          <span id="faq-close" class="modal-close">&times;</span>
+          <h3>Radar Station FAQ</h3>
+          <!-- Add your actual FAQ questions & answers here: -->
+          <p><strong>Q:</strong> How do I pick a station?<br/>
+             <strong>A:</strong> Open the dropdown, and pick the station nearest to you. some cities may have more than one station, offering different products. Not all stations offer all products.</p>
+          <p><strong>Q:</strong> What does “Super-Res Reflectivity" Mean?<br/>
+             <strong>A:</strong> This is your local NWS office's percipitation radar, in high resoloution.</p>
+             <p><strong>Q:</strong> What does “Super-Res Velocity" Mean?<br/>
+              <strong>A:</strong> This is your local NWS office's velocity radar, in high resoloution. It shows the velocity with which a storm is moving, with green moving towards the station, and red moving away. The lighter the color, the faster the storm is moving.</p>
+              <p><strong>Q:</strong> What does “Hydrometer Classification” show?<br/>
+                <strong>A:</strong> [ANSWER NEEDED]</p>
+                <p><strong>Q:</strong> What does “1‑hr Precip Accumulation” show?<br/>
+                  <strong>A:</strong> [ANSWER NEEDED]</p>
+                  <p><strong>Q:</strong> What does “Storm Total Precipitation” show?<br/>
+                    <strong>A:</strong> [ANSWER NEEDED]</p>
+                    <p><strong>Q:</strong> How often does the map update?<br/>
+                      <strong>A:</strong> [ANSWER NEEDED]</p>
+        </div>
+      </div>
       <div id="radar-map"></div>
     </section>
 

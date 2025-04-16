@@ -220,17 +220,25 @@ const staticStations = [
 // 1. Initialize Leaflet map & base layer
 // ---------------------------------------------
 const map = L.map('radar-map', {
-  center: [39.8283, -98.5795], // continental US center
+  center: [39.8283, -98.5795],
   zoom: 5,
   attributionControl: false
 });
+
+// Base OSM tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+// Immediately invalidate size in case CSS changed the height
+setTimeout(() => map.invalidateSize(), 0);
+
+// Also re‑invalidate on window resize
+window.addEventListener('resize', () => map.invalidateSize());
+
 
 // ---------------------------------------------
-// 2. National Reflectivity (WMS via proxy)
+// 2. National Reflectivity Overlay (WMS via proxy)
 // ---------------------------------------------
 const proxyUrl = 'https://jolly-math-3a60.accounts-millernj.workers.dev/proxy';
 const nationalReflectivity = L.tileLayer.wms(proxyUrl, {
@@ -246,8 +254,8 @@ const nationalReflectivity = L.tileLayer.wms(proxyUrl, {
 // ---------------------------------------------
 const warningsLayer = L.geoJSON(null, {
   style: () => ({ color:'#c00', fillColor:'#c00', fillOpacity:0.2, weight:2 }),
-  onEachFeature: (feat, layer) => {
-    const p = feat.properties;
+  onEachFeature: (f, layer) => {
+    const p = f.properties;
     layer.bindPopup(
       `<strong>${p.event}</strong><br>` +
       `Area: ${p.areaDesc}<br>` +
@@ -258,8 +266,8 @@ const warningsLayer = L.geoJSON(null, {
 });
 const watchesLayer = L.geoJSON(null, {
   style: () => ({ color:'#f80', fillColor:'#f80', fillOpacity:0.2, weight:2 }),
-  onEachFeature: (feat, layer) => {
-    const p = feat.properties;
+  onEachFeature: (f, layer) => {
+    const p = f.properties;
     layer.bindPopup(
       `<strong>${p.event}</strong><br>` +
       `Area: ${p.areaDesc}<br>` +
@@ -271,33 +279,32 @@ const watchesLayer = L.geoJSON(null, {
 function fetchWatchWarnData(){
   console.log('Fetching NWS alerts…');
   fetch('https://api.weather.gov/alerts/active')
-    .then(r=>r.json())
-    .then(data=>{
+    .then(r => r.json())
+    .then(data => {
       warningsLayer.clearLayers();
       watchesLayer.clearLayers();
-      data.features.forEach(f=>{
-        const ev=f.properties.event||'';
-        if(/Warning/i.test(ev)) warningsLayer.addData(f);
-        else if(/Watch|Advisory/i.test(ev)) watchesLayer.addData(f);
+      data.features.forEach(f => {
+        const ev = f.properties.event || '';
+        if (/Warning/i.test(ev)) warningsLayer.addData(f);
+        else if (/Watch|Advisory/i.test(ev)) watchesLayer.addData(f);
       });
     })
-    .catch(e=>console.error('Alerts error:',e));
+    .catch(e => console.error('Alerts error:', e));
 }
 fetchWatchWarnData();
-setInterval(fetchWatchWarnData,10*60*1000); // every 10 min
+setInterval(fetchWatchWarnData, 10*60*1000); // every 10 minutes
 
 
 // ---------------------------------------------
 // 4. Radar Products per Station (WMS)
 // ---------------------------------------------
-// List IDs must match <Name> suffixes in GetCapabilities
 const radarProducts = [
   { id:'sr_bref', name:'Super‑Res Reflectivity' },
   { id:'sr_bvel', name:'Super‑Res Velocity' },
   { id:'bdhc',   name:'Hydrometeor Classification' },
   { id:'boha',   name:'1‑hr Precip Accumulation' },
   { id:'bdsa',   name:'Storm Total Precipitation' },
-  // …add more as available…
+  // …add more as needed…
 ];
 let productLayers = {};
 
@@ -320,14 +327,14 @@ const controlLayers = L.control.layers(
 // 6. Populate Station Dropdown
 // ---------------------------------------------
 function populateStationSelect(){
-  const sel=document.getElementById('radar-select');
-  if(!sel) return;
+  const sel = document.getElementById('radar-select');
+  if (!sel) return;
   staticStations
     .slice().sort((a,b)=>a.name.localeCompare(b.name))
-    .forEach(s=>{
-      const opt=document.createElement('option');
-      opt.value=s.id;
-      opt.text=`${s.name} (${s.id}) – ${s.state}`;
+    .forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.text  = `${s.name} (${s.id}) – ${s.state}`;
       sel.appendChild(opt);
     });
 }
@@ -338,27 +345,28 @@ populateStationSelect();
 // 7. On Station Change → Fetch GetCapabilities
 // ---------------------------------------------
 function updateStationProducts(stationId){
-  // clear existing product layers
+  // clear any old product overlays
   Object.values(productLayers).forEach(layer=>{
     controlLayers.removeLayer(layer);
     map.removeLayer(layer);
   });
-  productLayers={};
-  if(!stationId) return;
+  productLayers = {};
 
-  const ws=stationId.toLowerCase();
-  const capUrl=`https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows?service=WMS&request=GetCapabilities&version=1.3.0`;
+  if (!stationId) return;
+
+  const ws = stationId.toLowerCase();
+  const capUrl = `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows?service=WMS&request=GetCapabilities&version=1.3.0`;
 
   fetch(capUrl)
-    .then(r=>r.text())
-    .then(xmlStr=>{
-      const xml=new DOMParser().parseFromString(xmlStr,'application/xml');
-      const names=Array.from(xml.getElementsByTagName('Name')).map(n=>n.textContent);
+    .then(r => r.text())
+    .then(xmlStr => {
+      const xml = new DOMParser().parseFromString(xmlStr, 'application/xml');
+      const names = Array.from(xml.getElementsByTagName('Name')).map(n => n.textContent);
 
-      radarProducts.forEach(prod=>{
-        const lname=`${ws}_${prod.id}`;
-        if(names.includes(lname)){
-          const layer=L.tileLayer.wms(
+      radarProducts.forEach(prod => {
+        const lname = `${ws}_${prod.id}`;
+        if (names.includes(lname)) {
+          const layer = L.tileLayer.wms(
             `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows`, {
               layers: lname,
               format:'image/png',
@@ -366,26 +374,31 @@ function updateStationProducts(stationId){
               attribution:`${prod.name} @ ${stationId}`
             }
           );
-          productLayers[prod.id]=layer;
+          productLayers[prod.id] = layer;
           controlLayers.addOverlay(layer, prod.name);
         } else {
-          alert(`${prod.name} not available for ${stationId}`);
+          // Show warning only once per missing product
+          console.warn(`${prod.name} unavailable for ${stationId}.`);
         }
       });
+
+      // After adding overlays, map may need resizing
+      setTimeout(() => map.invalidateSize(), 0);
     })
-    .catch(err=>console.error('Capabilities error:',err));
+    .catch(err => console.error('Capabilities error:', err));
 }
+
 document.getElementById('radar-select')
-  .addEventListener('change', e=>updateStationProducts(e.target.value));
+  .addEventListener('change', e => updateStationProducts(e.target.value));
 
 
 // ---------------------------------------------
 // 8. Auto‑select on location-ready (optional)
 // ---------------------------------------------
 document.addEventListener('location-ready', ()=>{
-  const sel=document.getElementById('radar-select');
-  if(currentLocation.radarStation && sel){
-    sel.value=currentLocation.radarStation;
+  const sel = document.getElementById('radar-select');
+  if (currentLocation.radarStation && sel) {
+    sel.value = currentLocation.radarStation;
     updateStationProducts(sel.value);
   }
 });
