@@ -216,204 +216,181 @@ const staticStations = [
   { id: "KESX", name: "	LAS VEGAS	", state: "	LAS VEGAS, NV	" },
   { id: "KEYX", name: "	EDWARDS AFB	", state: "	LAS VEGAS, NV	" },
 ]
-// ---------------------------------------------
-// 1. Initialize Leaflet map & base layer
-// ---------------------------------------------
+// RadarMap.js
+
+// 2. Initialize map
 const map = L.map('radar-map', {
   center: [39.8283, -98.5795],
   zoom: 5,
   attributionControl: false
 });
 
-// Base OSM tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// 3. Base layers
+const lightBase = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors'
+});
+const darkBase = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Immediately invalidate size in case CSS changed the height
-setTimeout(() => map.invalidateSize(), 0);
-
-// Also re‑invalidate on window resize
-window.addEventListener('resize', () => map.invalidateSize());
-
-
-// ---------------------------------------------
-// 2. National Reflectivity Overlay (WMS via proxy)
-// ---------------------------------------------
+// 4. National Reflectivity overlay (added by default)
 const proxyUrl = 'https://jolly-math-3a60.accounts-millernj.workers.dev/proxy';
 const nationalReflectivity = L.tileLayer.wms(proxyUrl, {
   layers: 'nexrad-n0r',
   format: 'image/png',
   transparent: true,
   attribution: 'National Reflectivity'
-});
+}).addTo(map);
 
+// 5. Alert priority weights
+const ALERT_PRIORITY = [
+  { regex: /tornado warning/i, weight: 10 },
+  { regex: /severe thunderstorm warning/i, weight: 9 },
+  { regex: /flood warning/i, weight: 8 },
+  { regex: /winter storm warning/i, weight: 7 },
+  { regex: /watch/i, weight: 6 },
+  { regex: /advisory/i, weight: 5 },
+  { regex: /statement/i, weight: 1 },
+  { regex: /.*/, weight: 0 }
+];
+function getAlertWeight(event) {
+  for (let p of ALERT_PRIORITY) if (p.regex.test(event)) return p.weight;
+  return 0;
+}
 
-// ---------------------------------------------
-// 3. NWS Alerts → GeoJSON (Warnings & Watches)
-// ---------------------------------------------
-const warningsLayer = L.geoJSON(null, {
-  style: () => ({ color:'#c00', fillColor:'#c00', fillOpacity:0.2, weight:2 }),
-  onEachFeature: (f, layer) => {
-    const p = f.properties;
-    layer.bindPopup(
-      `<strong>${p.event}</strong><br>` +
-      `Area: ${p.areaDesc}<br>` +
-      `Effective: ${new Date(p.effective).toLocaleString()}<br>` +
-      `${p.description}`
-    );
-  }
-});
-const watchesLayer = L.geoJSON(null, {
-  style: () => ({ color:'#f80', fillColor:'#f80', fillOpacity:0.2, weight:2 }),
-  onEachFeature: (f, layer) => {
-    const p = f.properties;
-    layer.bindPopup(
-      `<strong>${p.event}</strong><br>` +
-      `Area: ${p.areaDesc}<br>` +
-      `Effective: ${new Date(p.effective).toLocaleString()}<br>` +
-      `${p.description}`
-    );
-  }
-});
-function fetchWatchWarnData(){
-  console.log('Fetching NWS alerts…');
+// 6. Alerts overlay (no per-feature popups)
+const alertsLayer = L.geoJSON(null, {
+  style: f => ({
+    color: getAlertColor(f.properties.event),
+    fillColor: getAlertColor(f.properties.event),
+    fillOpacity: 0.2,
+    weight: 2
+  })
+}).addTo(map);
+
+// 7. Color mapping
+function getAlertColor(event) {
+  const e = event.toLowerCase();
+  if (e.includes('tornado')) return '#ff0000';
+  if (e.includes('severe storm')) return '#ff8000';
+  if (e.includes('flood')) return '#0000ff';
+  if (e.includes('freeze')) return '#00ffff';
+  if (e.includes('warning')) return '#cc0000';
+  if (e.includes('watch')) return '#ffcc00';
+  return '#888888';
+}
+
+// 8. Fetch and render alerts with prioritization
+function fetchAlertsData() {
   fetch('https://api.weather.gov/alerts/active')
     .then(r => r.json())
     .then(data => {
-      warningsLayer.clearLayers();
-      watchesLayer.clearLayers();
-      data.features.forEach(f => {
-        const ev = f.properties.event || '';
-        if (/Warning/i.test(ev)) warningsLayer.addData(f);
-        else if (/Watch|Advisory/i.test(ev)) watchesLayer.addData(f);
-      });
+      alertsLayer.clearLayers();
+      data.features.sort((a, b) => getAlertWeight(a.properties.event) - getAlertWeight(b.properties.event));
+      data.features.forEach(f => alertsLayer.addData(f));
     })
-    .catch(e => console.error('Alerts error:', e));
+    .catch(console.error);
 }
-fetchWatchWarnData();
-setInterval(fetchWatchWarnData, 10*60*1000); // every 10 minutes
+fetchAlertsData();
+setInterval(fetchAlertsData, 10 * 60 * 1000);
 
+// 9. Aggregated popup on click
+map.on('click', e => {
+  const hits = alertsLayer.getLayers().filter(layer => layer.getBounds().contains(e.latlng));
+  if (!hits.length) return;
+  const html = hits.map(layer => {
+    const p = layer.feature.properties;
+    return `<strong>${p.event}</strong><br>` +
+           `${p.areaDesc}<br>` +
+           `Effective: ${new Date(p.effective).toLocaleString()}<br>` +
+           `${p.description}<hr>`;
+  }).join('');
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent(html)
+    .openOn(map);
+});
 
-// ---------------------------------------------
-// 4. Radar Products per Station (WMS)
-// ---------------------------------------------
+// 10. Layers control
+const layersControl = L.control.layers(
+  { 'Light Mode': lightBase, 'Dark Mode': darkBase },
+  { 'National Reflectivity': nationalReflectivity, 'Alerts': alertsLayer },
+  { collapsed: false }
+).addTo(map);
+
+// 11. Radar station products (unchanged)
 const radarProducts = [
-  { id:'sr_bref', name:'Super‑Res Reflectivity' },
-  { id:'sr_bvel', name:'Super‑Res Velocity' },
-  { id:'bdhc',   name:'Hydrometeor Classification' },
-  { id:'boha',   name:'1‑hr Precip Accumulation' },
-  { id:'bdsa',   name:'Storm Total Precipitation' },
-  // …add more as needed…
+  { id: 'sr_bref', name: 'Super‑Res Reflectivity' },
+  { id: 'sr_bvel', name: 'Super‑Res Velocity' },
+  { id: 'bdhc',   name: 'Hydrometeor Classification' },
+  { id: 'boha',   name: '1‑hr Precip Accumulation' },
+  { id: 'bdsa',   name: 'Storm Total Precipitation' }
 ];
 let productLayers = {};
 
-
-// ---------------------------------------------
-// 5. Build Layers Control
-// ---------------------------------------------
-const controlLayers = L.control.layers(
-  {}, 
-  {
-    'National Reflectivity': nationalReflectivity,
-    'Warnings':              warningsLayer,
-    'Watches & Advisories':  watchesLayer
-  },
-  { collapsed:false }
-).addTo(map);
-
-
-// ---------------------------------------------
-// 6. Populate Station Dropdown
-// ---------------------------------------------
-function populateStationSelect(){
+function populateStationSelect() {
   const sel = document.getElementById('radar-select');
-  if (!sel) return;
-  staticStations
-    .slice().sort((a,b)=>a.name.localeCompare(b.name))
+  staticStations.slice().sort((a, b) => a.name.localeCompare(b.name))
     .forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.text  = `${s.name} (${s.id}) – ${s.state}`;
-      sel.appendChild(opt);
+      const o = document.createElement('option');
+      o.value = s.id;
+      o.text = `${s.name} (${s.id}) – ${s.state}`;
+      sel.appendChild(o);
     });
 }
 populateStationSelect();
 
-
-// ---------------------------------------------
-// 7. On Station Change → Fetch GetCapabilities
-// ---------------------------------------------
-function updateStationProducts(stationId){
-  // clear any old product overlays
-  Object.values(productLayers).forEach(layer=>{
-    controlLayers.removeLayer(layer);
-    map.removeLayer(layer);
+function updateStationProducts(id) {
+  Object.values(productLayers).forEach(l => {
+    map.removeLayer(l);
+    layersControl.removeLayer(l);
   });
   productLayers = {};
-
-  if (!stationId) return;
-
-  const ws = stationId.toLowerCase();
-  const capUrl = `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows?service=WMS&request=GetCapabilities&version=1.3.0`;
-
-  fetch(capUrl)
+  if (!id) return;
+  const ws = id.toLowerCase();
+  const url = `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows?service=WMS&request=GetCapabilities&version=1.3.0`;
+  fetch(url)
     .then(r => r.text())
     .then(xmlStr => {
       const xml = new DOMParser().parseFromString(xmlStr, 'application/xml');
       const names = Array.from(xml.getElementsByTagName('Name')).map(n => n.textContent);
-
       radarProducts.forEach(prod => {
-        const lname = `${ws}_${prod.id}`;
-        if (names.includes(lname)) {
-          const layer = L.tileLayer.wms(
-            `https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows`, {
-              layers: lname,
-              format:'image/png',
-              transparent:true,
-              attribution:`${prod.name} @ ${stationId}`
-            }
-          );
-          productLayers[prod.id] = layer;
-          controlLayers.addOverlay(layer, prod.name);
-        } else {
-          // Show warning only once per missing product
-          console.warn(`${prod.name} unavailable for ${stationId}.`);
+        const layerName = `${ws}_${prod.id}`;
+        if (names.includes(layerName)) {
+          const ly = L.tileLayer.wms(`https://opengeo.ncep.noaa.gov/geoserver/${ws}/ows`, {
+            layers: layerName,
+            format: 'image/png',
+            transparent: true,
+            attribution: `${prod.name} @ ${id}`
+          });
+          productLayers[prod.id] = ly;
+          layersControl.addOverlay(ly, prod.name);
         }
       });
-
-      // After adding overlays, map may need resizing
-      setTimeout(() => map.invalidateSize(), 0);
     })
-    .catch(err => console.error('Capabilities error:', err));
+    .catch(console.error);
 }
 
-document.getElementById('radar-select')
-  .addEventListener('change', e => updateStationProducts(e.target.value));
-
-
-// ---------------------------------------------
-// 8. Auto‑select on location-ready (optional)
-// ---------------------------------------------
-document.addEventListener('location-ready', ()=>{
-  const sel = document.getElementById('radar-select');
-  if (currentLocation.radarStation && sel) {
-    sel.value = currentLocation.radarStation;
-    updateStationProducts(sel.value);
-  }
+// 12. On location-ready: center map and refresh alerts only
+//    No default station selection; user chooses manually
+document.addEventListener('location-ready', () => {
+  const { latitude, longitude } = currentLocation;
+  map.setView([latitude, longitude], 7);
+  fetchAlertsData();
 });
 
+// 13. User-triggered station selection
+//    Show chosen station's layers when user picks a station
+document.getElementById('radar-select').addEventListener('change', e => {
+  updateStationProducts(e.target.value);
+});
 
-// ---------------------------------------------
-// 9. FAQ Modal Logic
-// ---------------------------------------------
-const helpIcon=document.getElementById('radar-help'),
-      faqModal=document.getElementById('faq-modal'),
-      faqClose=document.getElementById('faq-close');
-if(helpIcon && faqModal && faqClose){
-  helpIcon.addEventListener('click',   ()=>faqModal.style.display='block');
-  faqClose.addEventListener('click',   ()=>faqModal.style.display='none');
-  window.addEventListener('click', evt=>{
-    if(evt.target===faqModal) faqModal.style.display='none';
-  });
+// 14. FAQ modal logic (unchanged)
+const helpIcon = document.getElementById('radar-help'),
+      faqModal = document.getElementById('faq-modal'),
+      faqClose = document.getElementById('faq-close');
+if (helpIcon && faqModal && faqClose) {
+  helpIcon.addEventListener('click', () => faqModal.style.display = 'block');
+  faqClose.addEventListener('click', () => faqModal.style.display = 'none');
+  window.addEventListener('click', e => { if (e.target === faqModal) faqModal.style.display = 'none'; });
 }

@@ -1,43 +1,63 @@
 // Location.js
 
-let currentLocation = { latitude: null, longitude: null, city: null };
+let currentLocation = {
+  latitude: null,
+  longitude: null,
+  city: null
+};
 
-// Fetch coordinates and city name from a given zip code
-function getLocationFromZip(zip) {
-  // Use Zippopotam.us API to convert zip code to latitude, longitude, and city name
-  const geocodeUrl = `https://api.zippopotam.us/us/${zip}`;
+// Centralize setting the location and firing the “location-ready” event
+function setLocation(lat, lon, cityName) {
+  currentLocation.latitude  = lat;
+  currentLocation.longitude = lon;
+  currentLocation.city      = cityName;
+  document.getElementById('location-display').textContent = `Location: ${cityName}`;
+  // let everyone know
+  document.dispatchEvent(new Event('location-ready'));
+}
 
-  fetch(geocodeUrl)
-    .then(response => response.json())
+// 1) Try IP Geolocation on first load
+function geolocateByIP() {
+  fetch('https://ipapi.co/json/')
+    .then(r => r.json())
     .then(data => {
-      if (data.places && data.places.length > 0) {
-        // Extract latitude, longitude, and city name
-        currentLocation.latitude = parseFloat(data.places[0].latitude);
-        currentLocation.longitude = parseFloat(data.places[0].longitude);
-        currentLocation.city = data.places[0]["place name"];  // City name
-        console.log('Location found:', currentLocation.latitude, currentLocation.longitude, currentLocation.city);
-        
-        // Update the location display with the city name
-        document.getElementById('location-display').textContent = `Location: ${currentLocation.city}`;
-        
-        // Notify the other scripts that the location is ready
-        document.dispatchEvent(new Event('location-ready'));  // Custom event signaling location is ready
-      } else {
-        console.error('Unable to find location for zip code');
-      }
+      const { latitude, longitude, city, region } = data;
+      setLocation(latitude, longitude, `${city}, ${region}`);
     })
-    .catch(error => {
-      console.error('Error fetching location from zip code:', error);
+    .catch(err => {
+      console.warn('IP geolocation failed:', err);
+      // If you want to fallback to a default, you could call setLocation here
     });
 }
 
-// Handle form submission for zip code
-document.getElementById('zip-form').addEventListener('submit', function(event) {
-  event.preventDefault();
-  const zip = document.getElementById('zip-input').value;
-  if (zip) {
-    getLocationFromZip(zip);
-  } else {
-    alert('Please enter a valid zip code');
-  }
+// 2) Zip‑code override
+function getLocationFromZip(zip) {
+  const geocodeUrl = `https://api.zippopotam.us/us/${zip}`;
+  fetch(geocodeUrl)
+    .then(r => {
+      if (!r.ok) throw new Error('Invalid ZIP');
+      return r.json();
+    })
+    .then(data => {
+      const place = data.places[0];
+      setLocation(
+        parseFloat(place.latitude),
+        parseFloat(place.longitude),
+        `${place['place name']}, ${data['post code']}`
+      );
+    })
+    .catch(err => {
+      console.error('Error fetching location for ZIP:', err);
+      alert('Cannot find that ZIP code.');
+    });
+}
+
+// Wire up the ZIP form
+document.getElementById('zip-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const zip = document.getElementById('zip-input').value.trim();
+  if (zip) getLocationFromZip(zip);
 });
+
+// Kick off IP geolocation once the DOM is ready
+window.addEventListener('DOMContentLoaded', geolocateByIP);
