@@ -2,8 +2,9 @@
 // Fetches hourly forecast data and renders flexbox bars with embedded info and a responsive canvas-based line chart for precipitation.
 
 const HOURS_TO_DISPLAY = 72;         // Number of forecast hours to display
-const MIN_BAR_HEIGHT = 160;          // Minimum pixel height for a temperature bar
-const MAX_BAR_HEIGHT = 500;          // Maximum height range for temperature bars
+const screenHeight = window.innerHeight;
+const MIN_BAR_HEIGHT = screenHeight * 0.15;
+const MAX_BAR_HEIGHT = screenHeight * 0.25;         // Maximum height range for temperature bars
 
 // Begin fetch chain
 function fetchHourlyForecast() {
@@ -39,7 +40,8 @@ function fetchHourlyForecast() {
 function renderHourlyForecast(hourData) {
   const container = document.getElementById('hourly-bars');
   const canvas = document.getElementById('precip-line-canvas');
-  container.innerHTML = '';
+  const oldBoxes = container.querySelectorAll('.hour-box');
+  oldBoxes.forEach(box => box.remove());
 
   const temps = hourData.map(h => h.temperature);
   const precips = hourData.map(h => h.probabilityOfPrecipitation?.value ?? 0);
@@ -71,68 +73,82 @@ function renderHourlyForecast(hourData) {
     container.appendChild(box);
   });
 
-  drawPrecipLine(precips);
+  requestAnimationFrame(() => drawPrecipLine(precips));
 }
 
-// Draws the precipitation line using actual rendered element sizes
 function drawPrecipLine(precipArray) {
   const canvas = document.getElementById('precip-line-canvas');
-  const ctx = canvas.getContext('2d');
   const container = document.getElementById('hourly-bars');
-  const firstBox = container.querySelector('.hour-box');
+  const boxes = container.querySelectorAll('.hour-box');
 
-  if (!firstBox) return;
+  if (!canvas || !container || boxes.length === 0) return;
 
-  // Get computed values of first bar (width + margins)
-  const style = getComputedStyle(firstBox);
-  const barWidth = firstBox.offsetWidth;
-  const marginLeft = parseFloat(style.marginLeft);
-  const marginRight = parseFloat(style.marginRight);
-  const fullWidthPerBar = barWidth + marginLeft + marginRight;
+  const ctx = canvas.getContext('2d');
 
-  // Dynamically set canvas size to match total bar layout
+  // Set canvas size to container's scroll size
   const width = container.scrollWidth;
-  const height = container.offsetHeight;
-  const zeroLineOffset = 100; // distance from bottom where 0% appears
-
+  const height = container.clientHeight;
   canvas.width = width;
   canvas.height = height;
   ctx.clearRect(0, 0, width, height);
 
-  // Draw style
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'rgba(100, 200, 255, 0.9)';
   ctx.beginPath();
 
-  // Convert precip % to Y coordinate
-  const chartHeight = height - zeroLineOffset;
-  function getY(value) {
-    return chartHeight - (value / 100) * chartHeight;
-  }
+  // Use getBoundingClientRect to find positions relative to canvas
+  const containerRect = container.getBoundingClientRect();
 
-  // Get array of [x, y] points
+  let topOfBars = Infinity;
+  let bottomOfText = -Infinity;
+
+  // Calculate vertical bounds
+  boxes.forEach(box => {
+    const bar = box.querySelector('.temp-bar');
+    const info = box.querySelector('.hour-info');
+
+    if (bar && info) {
+      const barTop = bar.getBoundingClientRect().top - containerRect.top;
+      const infoRect = info.getBoundingClientRect();
+      const textTop = infoRect.top - containerRect.top - 4; // 4px padding above text
+      
+      topOfBars = Math.min(topOfBars, barTop);
+      bottomOfText = Math.max(bottomOfText, textTop);
+    }
+  });
+
+  const chartHeight = bottomOfText - topOfBars;
+
+  const getY = (value) => {
+    const ratio = value / 100;
+    return bottomOfText - (ratio * chartHeight);
+  };
+
+  // Map each point to center of each bar using actual offsetLeft
   const points = [];
 
-  // Add leading offscreen point
-  const firstValue = precipArray[0];
-  const preX = -fullWidthPerBar / 2 + marginLeft + barWidth / 2;
-  points.push([preX, getY(firstValue)]);
-  
-  // Add main points
-  precipArray.forEach((value, index) => {
-    const x = index * fullWidthPerBar + marginLeft + barWidth / 2;
-    points.push([x, getY(value)]);
+  // Add leading point (offscreen)
+  const firstBox = boxes[0];
+  const boxWidth = firstBox.offsetWidth;
+  const firstX = firstBox.offsetLeft + boxWidth / 2;
+  const preX = firstX - (boxWidth);
+  points.push([preX, getY(precipArray[0])]);
+
+  // Main data points
+  boxes.forEach((box, i) => {
+    const value = precipArray[i];
+    const x = box.offsetLeft + box.offsetWidth / 2;
+    const y = getY(value);
+    points.push([x, y]);
   });
-  
-  // Add trailing offscreen point
-  const lastIndex = precipArray.length - 1;
-  const lastValue = precipArray[lastIndex];
-  const postX = (lastIndex + 1) * fullWidthPerBar + marginLeft + barWidth / 2;
-  points.push([postX, getY(lastValue)]);
 
-  if (points.length < 2) return;
+  // Add trailing point (offscreen)
+  const lastBox = boxes[boxes.length - 1];
+  const lastX = lastBox.offsetLeft + lastBox.offsetWidth / 2;
+  const postX = lastX + (lastBox.offsetWidth);
+  points.push([postX, getY(precipArray[precipArray.length - 1])]);
 
-  // Draw smooth line using Bezier spline
+  // Draw curve
   ctx.moveTo(points[0][0], points[0][1]);
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[i - 1] || points[i];
@@ -151,6 +167,8 @@ function drawPrecipLine(precipArray) {
   ctx.stroke();
 }
 
+
+
 document.addEventListener("location-ready", function() {
-  fetchHourlyForecast(); // still run once on location ready!
+  fetchHourlyForecast();
 });

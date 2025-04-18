@@ -73,26 +73,20 @@ function fetchDailyForecast() {
         let temperature = period.temperature !== undefined ? period.temperature : "N/A";
         let temperatureUnit = period.temperatureUnit || "";
         let shortForecast = period.shortForecast || "N/A";
-
-        // Precipitation chance: only display if provided and above 35%
-        let precipHtml = "";
-        if (typeof period.probabilityOfPrecipitation === "number" && period.probabilityOfPrecipitation > 35) {
-          precipHtml = `<p>Precipitation Chance: ${period.probabilityOfPrecipitation}%</p>`;
-        }
+        let precip = period.probabilityOfPrecipitation.value || "no";
 
         // Wind estimate: display wind speed and wind direction if available
         let windInfo = "";
         if (period.windSpeed || period.windDirection) {
-          windInfo = `<p>Wind: ${period.windSpeed ? period.windSpeed : "N/A"} ${period.windDirection ? period.windDirection : ""}</p>`;
+          windInfo = `${period.windSpeed ? period.windSpeed : "N/A"} ${period.windDirection ? period.windDirection : ""}`;
         }
 
         // Combine all forecast information
         return `<div style="margin-bottom: 10px; padding-bottom: 5px;">
-                  <p><strong>${name}</strong></p>
-                  <p>Start Time: ${startTime}</p>
-                  <p>Temperature: ${temperature}°${temperatureUnit}</p>
-                  <p>Short Forecast: ${shortForecast}</p>
-                  ${precipHtml}
+                  <h4><strong>${name}</strong></h4>
+                  <p>🌡 ${temperature}°${temperatureUnit}</p>
+                  <p> ${shortForecast}</p>
+                  <p>🌧 ${precip} % chance<p>
                   ${windInfo}
                 </div>`;
       }).join("");
