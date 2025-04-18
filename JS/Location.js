@@ -17,16 +17,21 @@ function setLocation(lat, lon, cityName) {
 }
 
 // 1) Try IP Geolocation on first load
+// 1) Try IP Geolocation on first load
 function geolocateByIP() {
-  fetch('https://ipapi.co/json/')
-    .then(r => r.json())
+  // use ip-api.com for CORS-friendly lookup
+  fetch('http://ip-api.com/json/')
+    .then(r => {
+      if (!r.ok) throw new Error('IP lookup failed');
+      return r.json();
+    })
     .then(data => {
-      const { latitude, longitude, city, region } = data;
-      setLocation(latitude, longitude, `${city}, ${region}`);
+      const { lat, lon, city, regionName } = data;
+      setLocation(lat, lon, `${city}, ${regionName}`);
     })
     .catch(err => {
       console.warn('IP geolocation failed:', err);
-      // If you want to fallback to a default, you could call setLocation here
+      // optional: fallback to default coordinates
     });
 }
 

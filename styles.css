@@ -1,35 +1,24 @@
 :root {
-  --bg-color: #0c0c0d;
-  --surface-color: #1b1b1d;
-  --card-bg: #2a2a2c;
-  --accent-color: #3399ff;
-  --text-color: #eaeaea;
+  --bg-color: #0e1013;
+  --surface-color: #17181B;
+  --card-bg: #202124;
+  --accent-color: #5F6368;
+  --header-color: #9AA0A6;
+  --text-color: #f1f3f4;
   --subtext-color: #b0b0b0;
   --border-color: #444;
   --shadow: rgba(0, 0, 0, 0.8);
-
-  /* Vanity variables */
-  --bg-grad-start: #0c0c0d;
-  --bg-grad-end:   #1b1b1d;
-  --bg-grad-angle: 135deg;
-
-  --control-bg:       var(--surface-color);
-  --control-border:   var(--border-color);
-  --control-radius:   8px;
-  --control-padding:  0.5em 1em;
+  --bg-grad-end: #15202b;
+  --control-bg: var(--surface-color);
+  --control-border: var(--border-color);
+  --control-radius: 8px;
+  --control-padding: 0.5em 1em;
   --control-hover-bg: var(--card-bg);
-  --control-focus:    var(--accent-color);
-
-  --section-radius:   12px;
-  --modal-radius:     12px;
-  --popup-radius:     8px;
-  --popup-padding:    0.75em 1em;
-}
-
-@keyframes gradientBG {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  --control-focus: var(--accent-color);
+  --section-radius: 12px;
+  --modal-radius: 12px;
+  --popup-radius: 8px;
+  --popup-padding: 0.75em 1em;
 }
 
 /* Global reset */
@@ -39,17 +28,98 @@
   box-sizing: border-box;
 }
 
-/* 1. Animated gradient background */
 body {
   font-family: Arial, sans-serif;
-  background: linear-gradient(var(--bg-grad-angle), var(--bg-grad-start), var(--bg-grad-end));
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
+  background: var(--bg-color);
+  background-size: 100% 100%;
   color: var(--text-color);
   padding: 20px;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* 2. Vanity for all form controls */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  opacity: 0.2; /* Controls SVG visibility */
+  pointer-events: none;
+  z-index: 0;
+}
+
+.frosted {
+  background: rgba(23, 24, 27, 0.6); /* Semi-transparent */
+  backdrop-filter: blur(7px);      /* Real blur effect */
+  -webkit-backdrop-filter: blur(12px); /* For Safari */
+  border-radius: 12px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5em 1em;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header-left,
+.header-center,
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  flex: 1;
+  justify-content: center;
+}
+
+.header-right > * {
+  margin-left: 1em;
+}
+
+.header-center form {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+#site-logo {
+  width: 40px;
+  height: auto;
+  margin-right: 0.5em;
+}
+
+header input,
+header button {
+  font-size: 1em;
+  padding: var(--control-padding);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--control-bg);
+  color: var(--text-color);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+header input {
+  width: 180px;
+  margin-right: 8px;
+}
+
+header button {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+#location-display {
+  font-size: 1.1em;
+  color: var(--subtext-color);
+}
+
 select,
 input[type="text"],
 input[type="number"],
@@ -81,7 +151,6 @@ button:focus {
   box-shadow: 0 0 0 3px rgba(51, 153, 255, 0.5);
 }
 
-/* Checkbox & radio styling */
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--accent-color);
@@ -90,7 +159,6 @@ input[type="radio"] {
   margin-right: 0.5em;
 }
 
-/* 3. Scrollbar styling */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -100,14 +168,13 @@ input[type="radio"] {
   border-radius: var(--control-radius);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--control-border);
+  background: var(--surface-color);
   border-radius: var(--control-radius);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-color);
 }
 
-/* Help icon next to the dropdown */
 .help-icon {
   margin-left: 8px;
   cursor: pointer;
@@ -115,7 +182,7 @@ input[type="radio"] {
   color: var(--accent-color);
 }
 
-/* Modal backdrop */
+/* Modal */
 .modal {
   display: none;
   position: fixed;
@@ -124,8 +191,6 @@ input[type="radio"] {
   width: 100%; height: 100%;
   background-color: rgba(0,0,0,0.5);
 }
-
-/* Modal content box */
 .modal-content {
   background: var(--surface-color);
   margin: 10% auto;
@@ -136,15 +201,13 @@ input[type="radio"] {
   color: var(--text-color);
   box-shadow: 0 4px 12px var(--shadow);
 }
-
-/* Close button (×) */
 .modal-close {
   float: right;
   font-size: 1.4em;
   cursor: pointer;
 }
 
-/* 4. Container & section shapes & sizes */
+/* Layout Grid */
 .container {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -155,72 +218,27 @@ input[type="radio"] {
     "daily daily";
   gap: 20px;
 }
-
 section {
   background: var(--surface-color);
   padding: 20px;
   border-radius: var(--section-radius);
-  border: 1px solid var(--border-color);
+  border: 0px solid var(--border-color);
   box-shadow: 0 2px 6px var(--shadow);
 }
 
-#radar-map {
-  height: 70vh;
-  border: 1px solid #ccc;
-  border-radius: var(--section-radius);
-  overflow: hidden;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-header form {
-  margin-bottom: 10px;
-}
-
-header input,
-header button {
-  /* retain size but apply vanity style */
-  font-size: 1em;
-  padding: var(--control-padding);
-  border: 1px solid var(--control-border);
-  border-radius: var(--control-radius);
-  background: var(--control-bg);
-  color: var(--text-color);
-  transition: background 0.2s, border-color 0.2s;
-}
-
-header input {
-  width: 180px;
-  margin-right: 8px;
-}
-
-header button {
-  background-color: var(--accent-color);
-  color: white;
-}
-
-header button:hover {
-  background-color: darken(var(--accent-color), 10%);
-}
-
-#location-display {
-  font-size: 1.1em;
-  color: var(--subtext-color);
-}
+#radar-selecter { padding-bottom: 20px; }
+#radar-map { height: 70vh; overflow: hidden; }
 
 #current-conditions { grid-area: current; }
-#alerts             { grid-area: alerts; }
-#radar-map-section  { grid-area: radar; }
-#hourly-forecast    { grid-area: hourly; }
-#daily-forecast     { grid-area: daily; }
+#alerts { grid-area: alerts; }
+#radar-map-section { grid-area: radar; }
+#hourly-forecast { grid-area: hourly; }
+#daily-forecast { grid-area: daily; }
 
-h2 {
+h2, h3 {
   margin-bottom: 15px;
   font-size: 1.6em;
-  color: var(--accent-color);
+  color: var(--header-color);
   font-weight: bold;
 }
 
@@ -228,7 +246,6 @@ h2 {
   min-height: 100px;
 }
 
-#hourly-forecast .forecast-wrapper,
 #daily-forecast .forecast-wrapper {
   display: flex;
   flex-direction: row;
@@ -244,45 +261,212 @@ h2 {
   border: 1px solid var(--border-color);
   border-radius: var(--control-radius);
   padding: 12px;
-  box-shadow: 0 2px 4px var(--shadow);
   flex: 0 0 200px;
   height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.forecast-wrapper > div:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px var(--shadow);
+#hourly-forecast-wrapper {
+  position: relative;
+  width: 100%;
+  height: 30VH;
+  overflow-x: auto;
+  border: none;
 }
 
-body::after {
-  content: "";
-  display: block;
-  height: 40px;
+
+#precip-line-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
 }
 
-/* 5. Leaflet popup vanity */
-.leaflet-popup-content-wrapper {
-  background: var(--surface-color);
-  border-radius: var(--popup-radius);
-  padding: var(--popup-padding);
-  box-shadow: 0 4px 12px var(--shadow);
+#hourly-bars {
+  display: flex;
+  height: 100%;
+  width: max-content;
+  position: relative;
+  z-index: 1;
+}
+
+.hour-box {
+  flex: 0 0 150px;
+  margin: 0 5px;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.temp-bar {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  background: var(--accent-color);
+  border-radius: 12px 12px 0 0;
+  z-index: 1;
+}
+
+.hour-info {
+  position: absolute;
+  bottom: 0;
+  text-align: center;
+  font-size: 1.3em;
+  font-weight: 600;
+  padding: 6px 2px;
+  padding-bottom: 20px;
   color: var(--text-color);
-}
-.leaflet-popup-content {
-  font-family: Arial, sans-serif;
-}
-.leaflet-popup-tip {
-  background: var(--surface-color);
+  z-index: 3;
+  pointer-events: none;
+  line-height: 1.4;
 }
 
-/* 6. Temperature‑based coloring & icon in Current Conditions */
+
+
+/*TimeDimension Control Container
+----------------------------------------------------------------------------
+Styles the background, border, text & shadow of the entire control box.
+Adjust via:
+  --control-bg      (background)
+  --control-border  (border color)
+  --control-radius  (border-radius)
+  --text-color      (text/icon color)
+  --shadow          (box-shadow)
+──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-timecontrol {
+ background:    var(--surface-color) !important;
+ border:        none !important;
+ border-radius: var(--control-radius);
+ color:         var(--text-color);
+ box-shadow:   none !important;
+}
+
+.leaflet-bar, .leaflet-bar-horizontal, .leaflet-bar-timecontrol, .leaflet-control {
+ background: var(--surface-color) !important;           /* transparent bg */
+ color:      var(--text-color) !important;
+ box-shadow:   none !important;
+ border:        2px var(--surface-color) !important;
+
+}
+/* ─────────────────────────────────────────────────────────────────────────────
+  Playback Buttons (Play/Pause, Back, Forward)
+  ----------------------------------------------------------------------------
+  Colors the icons inside the td‑buttons container.
+  Adjust via:
+    --accent-color (icon color)
+    --control-focus (hover color)
+  ──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-timecontrol button,
+.leaflet-control-timecontrol .timecontrol .td-buttons span {
+ background: var(--surface-color) !important;           /* transparent bg */
+ color:      var(--text-color) !important;
+}
+.leaflet-control-timecontrol.timecontrol-play {
+ color: var(--text-color)
+}
+
+.leaflet-control-timecontrol button:hover,
+.leaflet-control-timecontrol .timecontrol .td-buttons span:hover {
+ color: var(--text-color) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+  Time Slider Track & Handle
+  ----------------------------------------------------------------------------
+  Styles the main time scrubber.
+  Adjust via:
+    --control-hover-bg (slider track)
+    --accent-color      (handle)
+    --control-border    (handle border)
+  ──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-timecontrol .timecontrol .td-slider {
+ background: var(--surface-color) !important;
+}
+
+/* Leaflet-TimeDimension uses jQuery UI under the hood, so target the handle: */
+.leaflet-control-timecontrol .timecontrol .td-slider .ui-slider-handle {
+ background: var(--surface-color) !important;
+ border:     none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+  Speed Slider Track & Handle
+  ----------------------------------------------------------------------------
+  Styles the speed (playback‑rate) slider.
+  Uses same variables as time slider.
+  ──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-timecontrol .timecontrol .td-speed .td-speed-slider {
+ background: var(--control-hover-bg)!important;
+}
+.leaflet-control-timecontrol .timecontrol .td-speed .td-speed-slider .ui-slider-handle {
+ background: var(--surface-color)!important;
+ border:     none!important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+  Date Display
+  ----------------------------------------------------------------------------
+  The “2025‑04‑17 13:00” text box above the slider.
+  Adjust via:
+    --text-color (color of the date)
+  ──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-timecontrol .timecontrol .td-date {
+ color: var(--text-color)!important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+  Leaflet Zoom (+ / –) Container
+  ----------------------------------------------------------------------------
+  Styles the +/- box on the map.
+  Adjust via same vars as control container.
+  ──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-zoom {
+ background:    var(--surface-color) !important;
+ border:        none !important;
+ border-radius: none !important;
+ box-shadow:    none !important;
+}
+
+.leaflet-control-zoom-out {
+ background:    var(--surface-color) !important;
+ border:        none !important;
+ border-radius: none !important;
+ box-shadow:    none !important;
+}
+.leaflet-control-zoom-in {
+ background:    var(--surface-color) !important;
+ border:        none !important;
+ border-radius: none !important;
+ box-shadow:    none !important;
+}
+/* ─────────────────────────────────────────────────────────────────────────────
+  Zoom Icons (+ and –)
+  ----------------------------------------------------------------------------
+  Colors the text/icons inside the zoom buttons.
+  Adjust via:
+    --accent-color (icon color)
+  ──────────────────────────────────────────────────────────────────────────── */
+.leaflet-control-zoom a {
+ color:     var(--accent-color) !important;
+ font-size: 1.2em; /* tweak size if needed */
+}
+
+/* Hover state for zoom buttons */
+.leaflet-control-zoom a:hover {
+ background:    var(--surface-color) !important;
+ border-color:  none !important;
+}
+
+/* Current Conditions Temp Icon */
 #current-conditions .content {
   position: relative;
-  padding-left: 2.5em; /* space for icon */
+  padding-left: 2.5em;
 }
 #current-conditions .temp-icon {
   position: absolute;
@@ -290,12 +474,12 @@ body::after {
   left: 1em;
   font-size: 1.5em;
 }
-.temp-cold    { background: #0044cc; color: white; }
-.temp-mild    { background: #339933; color: white; }
-.temp-warm    { background: #cc8800; color: white; }
-.temp-hot     { background: #cc0000; color: white; }
+.temp-cold { background: #0044cc; color: white; }
+.temp-mild { background: #339933; color: white; }
+.temp-warm { background: #cc8800; color: white; }
+.temp-hot  { background: #cc0000; color: white; }
 
-/* 7. Top alert banner */
+/* Alert Banner */
 #alert-banner {
   display: none;
   position: fixed;
@@ -305,45 +489,32 @@ body::after {
   max-height: 0;
   transition: max-height 0.4s ease;
   text-align: center;
-  padding: 0 1em;
+  padding: 0 0.5em;
   color: white;
   font-weight: bold;
   z-index: 2000;
 }
-
-/* once visible, allow enough height for two lines of text */
 body.has-alert #alert-banner {
   display: block;
   padding: 0.5em 1em;
   max-height: 4em;
 }
+#alert-banner.watch { background: #ffcc00; color: #000; }
+#alert-banner.warning { background: #cc0000; }
 
-#alert-banner.watch {
-  background: #ffcc00;  /* yellow */
-  color: #000;
-}
-
-#alert-banner.warning {
-  background: #cc0000;  /* red */
-}
-
-/* Banner row: summary + close button */
 #alert-banner #alert-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.5em 1em;
 }
-
-/* Summary text: clickable toggle */
 #alert-banner #alert-summary {
   flex: 1;
   font-size: 1rem;
+  align-items: center;
   cursor: pointer;
   text-align: left;
 }
-
-/* Close “×” */
 #alert-banner #alert-close {
   background: transparent;
   border: none;
@@ -352,8 +523,6 @@ body.has-alert #alert-banner {
   color: inherit;
   cursor: pointer;
 }
-
-/* Details pane */
 #alert-banner #alert-details {
   overflow: auto;
   max-height: 0;

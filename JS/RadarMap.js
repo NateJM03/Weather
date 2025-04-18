@@ -1,4 +1,4 @@
-
+window.productLayers = window.productLayers || {};
 const staticStations = [
   { id: "KABR", name: "	ABERDEEN	", state: "	ABERDEEN, SD	" },
   { id: "KBIS", name: "	BISMARCK	", state: "	BISMARCK, ND	" },
@@ -216,31 +216,96 @@ const staticStations = [
   { id: "KESX", name: "	LAS VEGAS	", state: "	LAS VEGAS, NV	" },
   { id: "KEYX", name: "	EDWARDS AFB	", state: "	LAS VEGAS, NV	" },
 ]
-// RadarMap.js
 
-// 2. Initialize map
+// helper to build the interval string
+function getTimeInterval() {
+  const now = new Date().toISOString();
+  if (document.getElementById('limit-history-checkbox').checked) {
+    return "PT1H/" + now;
+  }
+  // e.g. 24‑hour history if unchecked:
+  return "P1D/"  + now;
+}
+
+// Initialize the map
 const map = L.map('radar-map', {
   center: [39.8283, -98.5795],
   zoom: 5,
-  attributionControl: false
+  attributionControl: false,
+
+  timeDimension: true,
+  timeDimensionOptions: {
+      timeInterval: "PT2H/" + new Date().toISOString(),
+      period: "PT5M"
+  },
+  
+  timeDimensionControl:        true,
+  timeDimensionControlOptions: {
+    position: 'bottomleft',
+    autoPlay: false,
+    timeSlider: true,
+    minBufferReady: 2,
+      playReverseButton: false,
+      backwardButton: false,
+      forwardButton: false,
+      playButton: true,
+      timeSlider: true,
+      speedSlider: true,
+      minSpeed: 2,
+      maxSpeed: 10,
+      speedStep: 2,
+      displayDate: false,
+      cache:30,
+    playerOptions: {
+      transitionTime: 500,
+      loop: true,
+      buffer: 10,
+      
+    }
+    }
 });
 
-// 3. Base layers
+// Add base layers
 const lightBase = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
-});
+}).addTo(map);
 const darkBase = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// 4. National Reflectivity overlay (added by default)
+// WMS Reflectivity Layer with TimeDimension
 const proxyUrl = 'https://jolly-math-3a60.accounts-millernj.workers.dev/proxy';
-const nationalReflectivity = L.tileLayer.wms(proxyUrl, {
-  layers: 'nexrad-n0r',
-  format: 'image/png',
+const nowcoastWmsUrl = `${proxyUrl}?url=${encodeURIComponent(
+  "https://nowcoast.noaa.gov/geoserver/observations/weather_radar/ows?SERVICE=WMS&"
+)}`;
+const nationalReflectivity = L.tileLayer.wms(nowcoastWmsUrl, {
+  layers: "conus_base_reflectivity_mosaic",
+  format: "image/png",
   transparent: true,
-  attribution: 'National Reflectivity'
+  version: "1.3.0",
+  crs: L.CRS.EPSG3857,
+  attribution: "NOAA nowCOAST"
+});
+
+const nationalReflectivityTime = L.timeDimension.layer.wms(nationalReflectivity, {
+  // skip reading the <Dimension> entries in Capabilities
+  requestTimeFromCapabilities: false,
+
+  // force 10‑minute spacing
+  period:                     "PT10M",
+
+  // still use your map’s global timeExtent
+  updateTimeDimension:        false,
+  setDefaultTime:             true
 }).addTo(map);
+
+// Ensure other layers are added without time control unless necessary
+// (Adding other layers here...)
+
+// Ensure everything is initialized correctly
+map.on('load', function() {
+  // Additional functionalities or checks after map is fully loaded
+});
 
 // 5. Alert priority weights
 const ALERT_PRIORITY = [
@@ -314,7 +379,7 @@ map.on('click', e => {
 // 10. Layers control
 const layersControl = L.control.layers(
   { 'Light Mode': lightBase, 'Dark Mode': darkBase },
-  { 'National Reflectivity': nationalReflectivity, 'Alerts': alertsLayer },
+  { 'National Reflectivity': nationalReflectivityTime, 'Alerts': alertsLayer },
   { collapsed: false }
 ).addTo(map);
 

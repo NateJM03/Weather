@@ -1,16 +1,21 @@
 // RefreshController.js
 // ——————————————————————————————————
-// Centralized 30 s refresh for all weather data and radar,
+// Centralized refresh for all weather data and radar,
 // with guard to ensure only one interval is ever scheduled.
 
 // Adjustable parameter:
-// • REFRESH_ALL_INTERVAL_MS: refresh interval in milliseconds
-const REFRESH_ALL_INTERVAL_MS = 6000 * 1000; // 30 seconds
+// • REFRESH_ALL_INTERVAL_MS: refresh interval in milliseconds.
+//   Increase this value for less frequent updates, or decrease for more frequent.
+const REFRESH_ALL_INTERVAL_MS = 600 * 1000; // 10 minutes
 
-// Flag to prevent multiple intervals
+// Flag to prevent scheduling multiple intervals
 let refreshScheduled = false;
 
-// Update the "Last updated" timestamp in the header and log it
+/**
+ * Updates the "Last updated" timestamp in the header.
+ * - Writes human‑readable time to the DOM.
+ * - Logs the ISO timestamp to the console.
+ */
 function updateLastUpdated() {
   const el = document.getElementById('last-updated');
   const now = new Date();
@@ -18,48 +23,57 @@ function updateLastUpdated() {
   console.log(`[${now.toISOString()}] Last‑updated set`);
 }
 
-// Perform a full refresh: fetch all data, redraw radar, update timestamp
+/**
+ * Performs a full data refresh:
+ * 1. Fetches and renders alerts, current conditions, hourly and daily forecasts.
+ * 2. Redraws any station‑specific radar layers (if initialized).
+ * 3. Updates the "Last updated" timestamp.
+ */
 function refreshAll() {
-  const start = new Date();
-  console.log(`[${start.toISOString()}] 🔄 Starting full refresh`);
-
-  // 1. Refresh weather data
-  fetchActiveAlerts();         // alerts
-  fetchCurrentConditions();    // current conditions
-  fetchHourlyForecast();       // hourly forecast
-  fetchDailyForecast();        // daily forecast
-
-  // 2. Refresh radar layers
-  if (typeof nationalReflectivity !== 'undefined') {
-    console.log('→ Redrawing national reflectivity');
-    nationalReflectivity.redraw();
+    // 1. Refresh all weather data
+    fetchActiveAlerts();
+    fetchCurrentConditions();
+    fetchHourlyForecast();
+    fetchDailyForecast();
+  
+    // 2. Refresh all product layers (station-based overlays)
+    if (window.productLayers && typeof window.productLayers === 'object') {
+      Object.values(window.productLayers).forEach(layer => {
+        if (layer && typeof layer.redraw === 'function') {
+          layer.redraw(); // station radar products
+        }
+      });
+    }
+  
+    // 3. Force refresh of the TimeDimension layer (cloud/radar animations)
+    if (window.map && window.map.timeDimension) {
+      const now = window.map.timeDimension.getCurrentTime();
+      window.map.timeDimension.setCurrentTime(now); // triggers refresh of the current frame
+    }
+  
+    // 4. Update timestamp
+    updateLastUpdated();
   }
-  if (typeof productLayers !== 'undefined') {
-    Object.values(productLayers).forEach(layer => {
-      console.log('→ Redrawing station layer:', layer);
-      layer.redraw();
-    });
+if (window.productLayers && typeof window.productLayers === 'object') {
+    Object.values(window.productLayers).forEach(layer => layer.redraw());
   }
-
-  // 3. Update header timestamp
-  updateLastUpdated();
-
-  const end = new Date();
-  console.log(`[${end.toISOString()}] ✅ Full refresh complete`);
-}
-
-// Kick off on each location-ready, but schedule interval only once
+/**
+ * Initializes the refresh cycle when a new location is set:
+ * - Immediately runs one full refresh.
+ * - Schedules recurring refreshes (only once).
+ * - Hooks up the manual "Refresh" button.
+ */
 function onLocationReady() {
-  // Immediate refresh on location change
-  refreshAll();
-
-  // Schedule recurring refresh only on first invocation
+  // Schedule first refresh after delay instead of running immediately
   if (!refreshScheduled) {
-    setInterval(refreshAll, REFRESH_ALL_INTERVAL_MS);
+    setTimeout(() => {
+      refreshAll(); // Run once after the delay
+      setInterval(refreshAll, REFRESH_ALL_INTERVAL_MS); // Then continue on interval
+    }, REFRESH_ALL_INTERVAL_MS);
     refreshScheduled = true;
   }
 
-  // Hook manual refresh button once
+  // Hook the manual refresh button (only once)
   const btn = document.getElementById('refresh-button');
   if (btn && !btn._hooked) {
     btn.addEventListener('click', () => {
@@ -70,4 +84,5 @@ function onLocationReady() {
   }
 }
 
+// Listen for the custom "location-ready" event to kick everything off
 document.addEventListener('location-ready', onLocationReady);

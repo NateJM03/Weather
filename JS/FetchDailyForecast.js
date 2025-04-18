@@ -87,7 +87,7 @@ function fetchDailyForecast() {
         }
 
         // Combine all forecast information
-        return `<div style="margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+        return `<div style="margin-bottom: 10px; padding-bottom: 5px;">
                   <p><strong>${name}</strong></p>
                   <p>Start Time: ${startTime}</p>
                   <p>Temperature: ${temperature}°${temperatureUnit}</p>

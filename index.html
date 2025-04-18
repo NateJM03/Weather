@@ -1,54 +1,73 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TheClearWeather</title>
-  <!-- Prevent missing favicon 404 -->
+  <title>TheClearWeatherApp</title>
   <link rel="icon" href="data:,">
+
+  <!-- Leaflet core -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- ISO‑8601 parser (required by TimeDimension) -->
+  <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+  <!-- TimeDimension plugin (CSS + JS) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+  <!-- Chart.js for drawing the hourly and daily forecast -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+  <!-- your own CSS -->
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
+
 <body>
   <!-- Alert banner -->
   <div id="alert-banner"></div>
 
   <header>
-    <div id="location-display"></div>
-    <form id="zip-form">
-      <label for="zip-input">Enter Zip Code:</label>
-      <input type="text" id="zip-input" placeholder="Zip Code" />
-      <button type="submit">Set Location</button>
-    </form>
-    <button id="refresh-button" type="button" 
-    style="margin-left:1em; padding:0.5em 1em; font:inherit;">
-Refresh
-</button>
-    <div id="last-updated" style="font-size:0.9em; color:var(--subtext-color);">
-      Last updated: —
+    <div class="header-left" class="frosted">
+      <img id="site-logo" src="logo.png" alt="Site Logo" />
+      <div id="location-display"></div>
+    </div>
+  
+    <div class="header-center">
+      <form id="zip-form">
+        <label for="zip-input">Enter Zip Code:</label>
+        <input type="text" id="zip-input" placeholder="Zip Code" />
+        <button type="submit">Set Location</button>
+      </form>
+    </div>
+  
+    <div class="header-right">
+      <button id="refresh-button" type="button">Refresh</button>
+      <div id="last-updated">Last updated: —</div>
     </div>
   </header>
 
   <div class="container">
-    <section id="current-conditions">
+    <section id="current-conditions" class="frosted">
       <h2>Current Conditions</h2>
       <div class="content"></div>
     </section>
 
-    <section id="alerts">
+    <section id="alerts"class="frosted">
       <h2>Active Alerts</h2>
       <div id="active-alerts" class="content"></div>
     </section>
 
-    <section id="radar-map-section">
+    <section id="radar-map-section"class="frosted">
       <h2>Radar Map</h2>
+      <div id="radar-selecter">
       <label for="radar-select">Select Radar Station:</label>
       <select id="radar-select">
         <option value="">None</option>
         <!-- the rest get appended by JS -->
       </select>
       <span id="radar-help" class="help-icon" title="Radar Station FAQ">?</span>
+    </div>
+      
 
       <div id="faq-modal" class="modal">
         <div class="modal-content">
@@ -75,18 +94,20 @@ Refresh
                   <div id="radar-map"></div>
                 </section>
             
-                <section id="hourly-forecast">
+                <section id="hourly-forecast"class="frosted">
                   <h2>Hourly Forecast</h2>
-                  <div class="content forecast-wrapper"></div>
+                  <div id="hourly-forecast-wrapper">
+                    <canvas id="precip-line-canvas"></canvas>
+                    <div id="hourly-bars"></div>
+                  </div>
                 </section>
-            
-                <section id="daily-forecast">
+                
+                <section id="daily-forecast"class="frosted">
                   <h2>Daily Forecast</h2>
                   <div class="content forecast-wrapper"></div>
                 </section>
               </div>
-            
-              <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
               <script src="https://unpkg.com/esri-leaflet"></script>
   <!-- Load Location first so currentLocation exists -->
   <script src="JS/Location.js"></script>
